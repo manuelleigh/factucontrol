@@ -1,0 +1,85 @@
+<%- include('partials/head') %>
+<div class="app-shell">
+  <%- include('partials/nav') %>
+  <main class="app-main">
+    <section class="page-header">
+      <div>
+        <span class="eyebrow">Módulo 1</span>
+        <h2>Proveedores</h2>
+        <p>Centraliza los emisores de facturas y conserva el historial mediante desactivación lógica.</p>
+      </div>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#proveedorModal">Nuevo proveedor</button>
+    </section>
+
+    <section class="panel-card">
+      <form class="row g-3 align-items-end" method="get">
+        <div class="col-md-6">
+          <label class="form-label">Buscar</label>
+          <input class="form-control" type="text" name="search" value="<%= search %>" placeholder="Nombre o identificación fiscal" />
+        </div>
+        <div class="col-md-3"><button class="btn btn-outline-primary w-100">Filtrar</button></div>
+        <div class="col-md-3"><a href="/proveedores" class="btn btn-light w-100">Limpiar</a></div>
+      </form>
+    </section>
+
+    <section class="panel-card">
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Proveedor</th>
+              <th>Identificación</th>
+              <th>Contacto</th>
+              <th>Estado</th>
+              <th class="text-end">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (proveedores.length) { %>
+              <% proveedores.forEach((proveedor) => { %>
+                <tr>
+                  <td><strong><%= proveedor.nombre %></strong><div class="text-muted small"><%= proveedor.giro || 'Sin giro registrado' %></div></td>
+                  <td><%= proveedor.identificacionFiscal %></td>
+                  <td><div><%= proveedor.telefono || 'Sin teléfono' %></div><div class="text-muted small"><%= proveedor.correo || 'Sin correo' %></div></td>
+                  <td><span class="status-badge <%= proveedor.activo ? 'pendiente' : 'vencida' %>"><%= proveedor.activo ? 'Activo' : 'Inactivo' %></span></td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-light js-edit-proveedor" data-proveedor='<%- JSON.stringify(proveedor) %>' data-bs-toggle="modal" data-bs-target="#proveedorModal">Editar</button>
+                    <% if (proveedor.activo) { %><button class="btn btn-sm btn-outline-danger js-deactivate-proveedor" data-id="<%= proveedor.id %>">Desactivar</button><% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr><td colspan="5" class="text-center py-5 text-muted">No hay proveedores registrados todavía.</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modal fade" id="proveedorModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div><span class="eyebrow">Formulario</span><h5 class="modal-title">Proveedor</h5></div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="proveedorForm" class="modal-body row g-3">
+        <input type="hidden" name="id" />
+        <div class="col-12 d-none" id="proveedorErrors"></div>
+        <div class="col-md-6"><label class="form-label">Nombre o razón social</label><input class="form-control" name="nombre" required /></div>
+        <div class="col-md-6"><label class="form-label">Identificación fiscal</label><input class="form-control" name="identificacionFiscal" required /></div>
+        <div class="col-md-6"><label class="form-label">Giro</label><input class="form-control" name="giro" /></div>
+        <div class="col-md-3"><label class="form-label">Teléfono</label><input class="form-control" name="telefono" /></div>
+        <div class="col-md-3"><label class="form-label">Correo</label><input class="form-control" name="correo" type="email" /></div>
+      </form>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" form="proveedorForm" class="btn btn-primary">Guardar proveedor</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="/js/proveedores.js"></script>
+<%- include('partials/footer') %>

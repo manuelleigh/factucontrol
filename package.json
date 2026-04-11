@@ -1,0 +1,29 @@
+{
+  "name": "factucontrol",
+  "version": "1.0.0",
+  "description": "Sistema web para gestionar facturas de gastos y compras en microempresas de servicios.",
+  "main": "app.js",
+  "scripts": {
+    "dev": "nodemon app.js",
+    "start": "node app.js",
+    "check": "node --check app.js",
+    "test": "node --test tests/*.test.js && node --check app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "dayjs": "^1.11.20",
+    "dotenv": "^17.4.1",
+    "ejs": "^5.0.1",
+    "express": "^5.2.1",
+    "multer": "^2.1.1",
+    "mysql2": "^3.22.0",
+    "pdfkit": "^0.18.0",
+    "sequelize": "^6.37.8"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
