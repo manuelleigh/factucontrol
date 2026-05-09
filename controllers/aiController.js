@@ -4,10 +4,12 @@ const {
   generateChatAssistant,
   generateDashboardInsight,
   generateProviderInsight,
+  generatePurchaseDraftFromPdf,
   generateRecordInsight,
 } = require('../services/aiService');
 const { createHttpError } = require('../utils/httpError');
 const { CompraBien, GastoOperativo } = require('../models');
+const { listActiveProveedores } = require('../services/proveedorService');
 
 const dashboardInsight = asyncHandler(async (req, res) => {
   if (!process.env.GROQ_API_KEY) {
@@ -79,4 +81,34 @@ const providerInsight = asyncHandler(async (req, res) => {
   res.json({ ok: true, ...result });
 });
 
-module.exports = { chatAssistant, dashboardInsight, providerInsight, recordInsight };
+const purchaseDraft = asyncHandler(async (req, res) => {
+  if (!process.env.GROQ_API_KEY) {
+    throw createHttpError(503, 'Configura GROQ_API_KEY para usar el asistente IA.');
+  }
+
+  if (!req.file) {
+    throw createHttpError(400, 'Debes subir un PDF para generar el borrador.');
+  }
+
+  try {
+    const providers = await listActiveProveedores();
+    const result = await generatePurchaseDraftFromPdf({
+      filePath: req.file.path,
+      originalName: req.file.originalname,
+      providers,
+    });
+    res.json({
+      ok: true,
+      ...result,
+      draftFilePath: `/uploads/drafts/${req.file.filename}`,
+    });
+  } catch (error) {
+    const fs = require('fs');
+    if (req.file?.path && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    throw error;
+  }
+});
+
+module.exports = { chatAssistant, dashboardInsight, providerInsight, purchaseDraft, recordInsight };

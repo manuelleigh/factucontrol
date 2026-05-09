@@ -8,6 +8,9 @@ const pagoErrors = document.getElementById('pagoErrors');
 const aiRegistroTitle = document.getElementById('aiRegistroTitle');
 const aiRegistroMeta = document.getElementById('aiRegistroMeta');
 const aiRegistroResult = document.getElementById('aiRegistroResult');
+const generateDraftButton = document.querySelector('.js-generate-pdf-draft');
+const attachmentFileInput = document.querySelector('.js-attachment-file');
+const draftFilePathInput = registroForm?.elements?.draftFilePath || null;
 
 let pendingSubmission = null;
 
@@ -167,6 +170,46 @@ function renderInsightBlock(insight = {}) {
   `;
 }
 
+function applyDraftToForm(draft = {}) {
+  const toDecimalString = (value) => {
+    if (value === undefined || value === null || value === '') return '';
+    const normalized = String(value).replace(/[^\d.,-]/g, '').replace(',', '.');
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? String(parsed) : '';
+  };
+
+  const setValue = (field, value) => {
+    if (registroForm.elements[field] && value !== undefined && value !== null) {
+      registroForm.elements[field].value = value;
+    }
+  };
+
+  if (draft.matchedProveedorId && registroForm.elements.proveedorId) {
+    registroForm.elements.proveedorId.value = draft.matchedProveedorId;
+  }
+
+  setValue('numeroFactura', draft.numeroFactura || '');
+  setValue('fechaEmision', draft.fechaEmision || '');
+  setValue('fechaVencimiento', draft.fechaVencimiento || '');
+  setValue('categoria', draft.categoria || '');
+  setValue('concepto', draft.concepto || '');
+  setValue('baseImponible', toDecimalString(draft.baseImponible));
+  setValue('porcentajeImpuesto', toDecimalString(draft.porcentajeImpuesto || 0) || '0');
+  setValue('nombreBien', draft.nombreBien || '');
+  setValue('cantidad', Number.isFinite(Number(draft.cantidad)) ? String(Number(draft.cantidad)) : '1');
+  setValue('estadoBien', draft.estadoBien || '');
+  if (draft.proveedorNombre && registroForm.elements.proveedorId) {
+    const providerText = Array.from(registroForm.elements.proveedorId.options).find((option) =>
+      option.text.toLowerCase().includes(String(draft.proveedorNombre).toLowerCase())
+    );
+    if (providerText) {
+      registroForm.elements.proveedorId.value = providerText.value;
+    }
+  }
+
+  updateTotalPreview();
+}
+
 if (registroForm) {
   const registroModal = document.getElementById('registroModal');
   const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
@@ -200,9 +243,55 @@ if (registroForm) {
     });
   });
 
+  if (attachmentFileInput) {
+    attachmentFileInput.addEventListener('change', () => {
+      if (draftFilePathInput) draftFilePathInput.value = '';
+    });
+  }
+
+  if (generateDraftButton) {
+    generateDraftButton.addEventListener('click', async () => {
+      const file = attachmentFileInput?.files?.[0];
+      if (!file) {
+        showFormErrors(['Primero selecciona un PDF de compra.']);
+        return;
+      }
+
+      if (file.type !== 'application/pdf') {
+        showFormErrors(['La preliminar automática solo funciona con PDFs.']);
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('archivoAdjunto', file);
+
+      try {
+        showFormErrors([]);
+        generateDraftButton.disabled = true;
+        generateDraftButton.textContent = 'Analizando PDF...';
+        const data = await window.appUtils.request('/api/ia/purchase-draft', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (draftFilePathInput) draftFilePathInput.value = data.draftFilePath || '';
+        applyDraftToForm(data.draft || {});
+        window.appUtils.showToast('Borrador generado desde el PDF.');
+      } catch (error) {
+        showFormErrors([error.message || 'No se pudo generar el borrador.']);
+      } finally {
+        generateDraftButton.disabled = false;
+        generateDraftButton.textContent = 'Generar preliminar desde PDF';
+      }
+    });
+  }
+
   registroForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const formData = new FormData(registroForm);
+    if (!formData.get('draftFilePath')) {
+      formData.delete('draftFilePath');
+    }
     const clientValidation = collectClientErrors(formData);
     if (clientValidation.errors.length) {
       applyFieldErrors(registroForm, clientValidation.details);

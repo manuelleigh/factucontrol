@@ -135,7 +135,15 @@
           <div class="col-md-3"><label class="form-label">Cantidad</label><input type="number" min="1" class="form-control" name="cantidad" value="1" /></div>
           <div class="col-md-3"><label class="form-label">Estado del bien</label><select class="form-select" name="estadoBien"><option value="">Selecciona</option><% estadosBien.forEach((estado) => { %><option value="<%= estado %>"><%= estado %></option><% }) %></select></div>
         <% } %>
-        <div class="col-md-6"><label class="form-label">Archivo adjunto</label><input class="form-control" type="file" name="archivoAdjunto" accept=".pdf,image/*" /></div>
+        <div class="col-md-6">
+          <label class="form-label">Archivo adjunto</label>
+          <input class="form-control js-attachment-file" type="file" name="archivoAdjunto" accept=".pdf,image/*" />
+          <% if (pageType === 'compra') { %>
+            <input type="hidden" name="draftFilePath" />
+            <button type="button" class="btn btn-outline-primary mt-2 js-generate-pdf-draft">Generar preliminar desde PDF</button>
+            <small class="d-block text-muted mt-2">Sube la factura en PDF, genera el borrador y luego ajusta los campos antes de guardar.</small>
+          <% } %>
+        </div>
         <div class="col-md-6"><label class="form-label">Total calculado</label><div class="total-preview" id="totalPreview">S/ 0.00</div></div>
       </form>
       <div class="modal-footer">

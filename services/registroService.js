@@ -11,7 +11,7 @@ const {
   GASTO_CATEGORIAS,
   METODOS_PAGO,
 } = require('../utils/constants');
-const { calculateTotal, getEffectiveStatus, toDecimal } = require('../utils/helpers');
+const { calculateTotal, getEffectiveStatus, sanitizeFilename, toDecimal } = require('../utils/helpers');
 const {
   computeDashboardSummary,
   validateDateRange,
@@ -146,6 +146,31 @@ function buildPayload(body, file, type, currentRecord = null) {
   return payload;
 }
 
+function moveDraftUploadToFinal(draftFilePath) {
+  if (!draftFilePath) return null;
+  const normalized = String(draftFilePath).replace(/^\/+/, '');
+  const sourceAbsolute = path.resolve(process.cwd(), normalized);
+  if (!fs.existsSync(sourceAbsolute)) {
+    throw createHttpError(400, 'El archivo temporal del borrador ya no existe.');
+  }
+
+  const finalDir = path.resolve(process.cwd(), process.env.UPLOAD_DIR || 'uploads');
+  if (!fs.existsSync(finalDir)) fs.mkdirSync(finalDir, { recursive: true });
+  const extension = path.extname(sourceAbsolute);
+  const base = path.basename(sourceAbsolute, extension);
+  const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+  const finalFilename = `${unique}-${sanitizeFilename(base)}${extension.toLowerCase()}`;
+  const finalAbsolute = path.join(finalDir, finalFilename);
+  fs.renameSync(sourceAbsolute, finalAbsolute);
+  return `/uploads/${finalFilename}`;
+}
+
+function resolveAttachmentPath(body, file) {
+  if (file) return `/uploads/${file.filename}`;
+  if (body?.draftFilePath) return moveDraftUploadToFinal(body.draftFilePath);
+  return null;
+}
+
 function safeDeleteUpload(filePath) {
   if (!filePath) return;
   const relativePath = filePath.replace(/^\/+/, '');
@@ -189,11 +214,13 @@ async function listRegistros(type, query = {}) {
 
 async function createRegistro(type, body, file) {
   const model = getModel(type);
-  const payload = buildPayload(body, file, type);
+  const attachmentPath = resolveAttachmentPath(body, file);
+  const payload = buildPayload(body, attachmentPath ? { filename: attachmentPath.replace(/^\/uploads\//, '') } : null, type);
+  if (attachmentPath) payload.archivoAdjunto = attachmentPath;
   const errors = validateCommonPayload(payload, type);
 
   if (Object.keys(errors).length) {
-    if (file) safeDeleteUpload(`/uploads/${file.filename}`);
+    if (attachmentPath) safeDeleteUpload(attachmentPath);
     throw createHttpError(400, 'No se pudo registrar la factura.', errors);
   }
 
@@ -207,13 +234,16 @@ async function updateRegistro(type, id, body, file) {
   const record = await model.findByPk(id);
   if (!record) {
     if (file) safeDeleteUpload(`/uploads/${file.filename}`);
+    if (body?.draftFilePath) safeDeleteUpload(body.draftFilePath);
     throw createHttpError(404, 'Registro no encontrado.');
   }
 
-  const payload = buildPayload(body, file, type, record);
+  const attachmentPath = resolveAttachmentPath(body, file);
+  const payload = buildPayload(body, attachmentPath ? { filename: attachmentPath.replace(/^\/uploads\//, '') } : null, type, record);
+  if (attachmentPath) payload.archivoAdjunto = attachmentPath;
   const errors = validateCommonPayload(payload, type);
   if (Object.keys(errors).length) {
-    if (file) safeDeleteUpload(`/uploads/${file.filename}`);
+    if (attachmentPath) safeDeleteUpload(attachmentPath);
     throw createHttpError(400, 'No se pudo actualizar la factura.', errors);
   }
 
@@ -222,7 +252,7 @@ async function updateRegistro(type, id, body, file) {
   const previousAttachment = record.archivoAdjunto;
   await record.update(payload);
 
-  if (file && previousAttachment && previousAttachment !== payload.archivoAdjunto) {
+  if ((file || attachmentPath) && previousAttachment && previousAttachment !== payload.archivoAdjunto) {
     safeDeleteUpload(previousAttachment);
   }
 

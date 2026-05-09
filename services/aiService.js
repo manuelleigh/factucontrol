@@ -1,7 +1,10 @@
+const fs = require('fs/promises');
+const { PDFParse } = require('pdf-parse');
 const { chatCompletion, fetchActiveModels, parseJsonContent } = require('./groqService');
 const { CompraBien, GastoOperativo, Proveedor } = require('../models');
 const { getEffectiveStatus } = require('../utils/helpers');
 const { createHttpError } = require('../utils/httpError');
+const { COMPRA_CATEGORIAS, ESTADOS_BIEN } = require('../utils/constants');
 
 function compactDashboardSnapshot(dashboard) {
   return {
@@ -195,6 +198,80 @@ function buildChatMessages(history = [], prompt) {
   return messages;
 }
 
+function buildPurchaseDraftSystemPrompt() {
+  return [
+    'Eres un extractor de datos de facturas de compra para una app universitaria.',
+    'Responde solo con JSON válido.',
+    'Usa estas claves exactas: proveedorNombre, matchedProveedorId, numeroFactura, fechaEmision, fechaVencimiento, categoria, concepto, baseImponible, porcentajeImpuesto, nombreBien, cantidad, estadoBien, confianza, observaciones.',
+    'Las fechas deben salir en formato YYYY-MM-DD o null si no aparecen con claridad.',
+    `Categorias permitidas: ${COMPRA_CATEGORIAS.join(', ')}.`,
+    `Estados de bien permitidos: ${ESTADOS_BIEN.join(', ')}.`,
+    'Si algo no se puede leer, usa null o una cadena vacía y explica la duda en observaciones.',
+  ].join(' ');
+}
+
+async function generatePurchaseDraftFromPdf({ filePath, originalName, providers = [] }) {
+  const fileBuffer = await fs.readFile(filePath);
+  const parser = new PDFParse({ data: fileBuffer });
+  const pdf = await parser.getText();
+  await parser.destroy();
+  const extractedText = String(pdf.text || '').replace(/\s+/g, ' ').trim().slice(0, 16000);
+  const providerList = providers.map((provider) => ({
+    id: provider.id,
+    nombre: provider.nombre,
+    identificacionFiscal: provider.identificacionFiscal,
+  }));
+
+  const { selected, source, available } = await fetchActiveModels();
+  const response = await chatCompletion({
+    model: selected,
+    messages: [
+      { role: 'system', content: buildPurchaseDraftSystemPrompt() },
+      {
+        role: 'user',
+        content: JSON.stringify({
+          archivo: originalName,
+          proveedoresExistentes: providerList,
+          textoPdf: extractedText,
+          instruccion:
+            'Identifica proveedor, número de factura, fechas, categoría, concepto, base imponible y datos del bien de forma breve. Si detectas un proveedor existente, sugiere su id en matchedProveedorId.',
+        }),
+      },
+    ],
+    responseFormat: { type: 'json_object' },
+    maxCompletionTokens: Number(process.env.GROQ_MAX_COMPLETION_TOKENS || 220),
+    temperature: 0.1,
+  });
+
+  const content = response?.choices?.[0]?.message?.content || '{}';
+  const parsed = parseJsonContent(content) || {};
+
+  const draft = {
+    proveedorNombre: String(parsed.proveedorNombre || parsed.proveedor || '').trim(),
+    matchedProveedorId: parsed.matchedProveedorId || null,
+    numeroFactura: String(parsed.numeroFactura || '').trim(),
+    fechaEmision: String(parsed.fechaEmision || '').trim(),
+    fechaVencimiento: String(parsed.fechaVencimiento || '').trim(),
+    categoria: String(parsed.categoria || '').trim(),
+    concepto: String(parsed.concepto || `Factura extraída de ${originalName}`).trim(),
+    baseImponible: parsed.baseImponible ?? '',
+    porcentajeImpuesto: parsed.porcentajeImpuesto ?? 0,
+    nombreBien: String(parsed.nombreBien || '').trim(),
+    cantidad: parsed.cantidad ?? 1,
+    estadoBien: String(parsed.estadoBien || 'Nuevo').trim(),
+    confianza: parsed.confianza ?? null,
+    observaciones: Array.isArray(parsed.observaciones) ? parsed.observaciones : parsed.observaciones ? [String(parsed.observaciones)] : [],
+    textoExterno: extractedText.slice(0, 1200),
+  };
+
+  return {
+    model: selected,
+    modelSource: source,
+    availableModels: available,
+    draft,
+  };
+}
+
 async function generateChatAssistant({ messages = [], dashboard, currentUser }) {
   const { selected, available, source } = await fetchActiveModels();
   const prompt = JSON.stringify({
@@ -230,5 +307,6 @@ module.exports = {
   generateChatAssistant,
   generateDashboardInsight,
   generateProviderInsight,
+  generatePurchaseDraftFromPdf,
   generateRecordInsight,
 };
