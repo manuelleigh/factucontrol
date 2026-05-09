@@ -1,0 +1,32 @@
+<%- include('partials/head') %>
+<main class="login-page">
+  <section class="login-card">
+    <div class="login-copy">
+      <span class="eyebrow">Acceso seguro</span>
+      <h1>Bienvenido a FactuControl</h1>
+      <p>Ingresa con tu usuario para gestionar facturas, proveedores y reportes con control por roles.</p>
+      <ul class="login-features">
+        <li>Acceso con sesión persistente</li>
+        <li>Roles para limitar acciones críticas</li>
+        <li>Migraciones versionadas sin `sync()`</li>
+      </ul>
+    </div>
+    <form class="login-form" action="/login" method="post">
+      <h2>Iniciar sesión</h2>
+      <% if (error) { %>
+        <div class="alert alert-danger"><%= error %></div>
+      <% } %>
+      <div class="mb-3">
+        <label class="form-label">Correo electrónico</label>
+        <input class="form-control" type="email" name="email" value="<%= email %>" required />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Contraseña</label>
+        <input class="form-control" type="password" name="password" required />
+      </div>
+      <button class="btn btn-primary w-100" type="submit">Entrar</button>
+      <p class="login-hint mt-3">Usuario inicial: `admin@factucontrol.local` si aún no se ha creado otro.</p>
+    </form>
+  </section>
+</main>
+<%- include('partials/footer') %>
