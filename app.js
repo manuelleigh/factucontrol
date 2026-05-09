@@ -10,6 +10,7 @@ const { sequelize } = require('./models');
 const { runMigrations } = require('./database/migrate');
 const { ensureDefaultAdminUser } = require('./services/userService');
 const authRoutes = require('./routes/auth');
+const iaRoutes = require('./routes/ia');
 const pageRoutes = require('./routes/pages');
 const proveedorRoutes = require('./routes/proveedores');
 const gastoRoutes = require('./routes/gastos');
@@ -74,6 +75,7 @@ app.use((req, res, next) => {
 app.use(authRoutes);
 app.use('/uploads', requireAuth, express.static(uploadDir));
 app.use('/', pageRoutes);
+app.use('/api/ia', iaRoutes);
 app.use('/api/proveedores', proveedorRoutes);
 app.use('/api/gastos', gastoRoutes);
 app.use('/api/compras', compraRoutes);

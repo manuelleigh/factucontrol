@@ -117,6 +117,21 @@
       </article>
     </section>
 
+    <section class="panel-card ai-panel">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">Asistente IA</span>
+          <h3>Análisis rápido con Groq</h3>
+        </div>
+        <button class="btn btn-primary" id="aiDashboardButton" type="button">Analizar ahora</button>
+      </div>
+      <p class="text-muted mb-3">
+        Genera un resumen breve del estado financiero usando un modelo ligero y rápido, ideal para uso universitario.
+      </p>
+      <div class="ai-meta mb-3" id="aiDashboardMeta">Modelo sugerido: se seleccionará automáticamente según disponibilidad.</div>
+      <div class="ai-result empty-state" id="aiDashboardResult">Pulsa "Analizar ahora" para obtener observaciones y acciones.</div>
+    </section>
+
     <section class="content-grid">
       <article class="panel-card">
         <div class="section-heading">
@@ -174,4 +189,5 @@
     </section>
   </main>
 </div>
+<script src="/js/dashboard-ai.js"></script>
 <%- include('partials/footer') %>

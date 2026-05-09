@@ -142,6 +142,37 @@ a { text-decoration: none; }
 }
 .empty-state { color: var(--muted); margin: 0; }
 .report-card { display: grid; gap: 8px; }
+.ai-panel { display: grid; gap: 8px; }
+.ai-meta {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.ai-result {
+  border: 1px dashed rgba(29,42,48,0.15);
+  border-radius: 20px;
+  background: rgba(255,255,255,0.68);
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+}
+.ai-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--brand-dark);
+}
+.ai-block strong {
+  display: block;
+  margin-bottom: 8px;
+}
+.ai-block ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--ink);
+}
+.ai-footnote {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
 .login-page {
   min-height: 100vh;
   display: grid;
