@@ -13,6 +13,10 @@
     <section class="panel-card">
       <form class="row g-3 align-items-end" method="get">
         <div class="col-md-3">
+          <label class="form-label">Buscar</label>
+          <input class="form-control" type="text" name="search" value="<%= filters.search %>" placeholder="Factura, concepto o bien" />
+        </div>
+        <div class="col-md-3">
           <label class="form-label">Proveedor</label>
           <select name="proveedorId" class="form-select">
             <option value="">Todos</option>
@@ -30,7 +34,7 @@
             <% }) %>
           </select>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
           <label class="form-label">Categoría</label>
           <select name="categoria" class="form-select">
             <option value="">Todas</option>
@@ -47,6 +51,10 @@
     </section>
 
     <section class="panel-card">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <small class="text-muted">Mostrando <%= records.length %> registros</small>
+        <small class="text-muted">Página <%= pagination.page %> de <%= pagination.totalPages %></small>
+      </div>
       <div class="table-responsive">
         <table class="table align-middle">
           <thead>
@@ -86,6 +94,19 @@
           </tbody>
         </table>
       </div>
+      <% if (pagination.totalPages > 1) { %>
+        <nav class="mt-4">
+          <ul class="pagination justify-content-center mb-0">
+            <li class="page-item <%= pagination.hasPrev ? '' : 'disabled' %>">
+              <a class="page-link" href="?search=<%= encodeURIComponent(filters.search) %>&proveedorId=<%= filters.proveedorId %>&estado=<%= filters.estado %>&categoria=<%= filters.categoria %>&fechaInicio=<%= filters.fechaInicio %>&fechaFin=<%= filters.fechaFin %>&page=<%= pagination.page - 1 %>&pageSize=<%= pagination.pageSize %>">Anterior</a>
+            </li>
+            <li class="page-item disabled"><span class="page-link">Página <%= pagination.page %> de <%= pagination.totalPages %></span></li>
+            <li class="page-item <%= pagination.hasNext ? '' : 'disabled' %>">
+              <a class="page-link" href="?search=<%= encodeURIComponent(filters.search) %>&proveedorId=<%= filters.proveedorId %>&estado=<%= filters.estado %>&categoria=<%= filters.categoria %>&fechaInicio=<%= filters.fechaInicio %>&fechaFin=<%= filters.fechaFin %>&page=<%= pagination.page + 1 %>&pageSize=<%= pagination.pageSize %>">Siguiente</a>
+            </li>
+          </ul>
+        </nav>
+      <% } %>
     </section>
   </main>
 </div>

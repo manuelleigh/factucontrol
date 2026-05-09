@@ -8,9 +8,7 @@ function buildPdfResponse(res, fileName) {
 }
 
 function renderHeader(doc, title, subtitle) {
-  doc
-    .roundedRect(36, 28, 523, 68, 16)
-    .fillAndStroke('#e7f1ed', '#d8e8e1');
+  doc.roundedRect(36, 28, 523, 68, 16).fillAndStroke('#e7f1ed', '#d8e8e1');
   doc.fillColor('#173d3f').fontSize(19).text(title, 52, 44);
   doc.fillColor('#486066').fontSize(10).text(subtitle, 52, 67);
   doc.moveDown(3.8);

@@ -2,7 +2,7 @@ const asyncHandler = require('../middleware/asyncHandler');
 const { createProveedor, deactivateProveedor, listProveedores, updateProveedor } = require('../services/proveedorService');
 
 const getAll = asyncHandler(async (req, res) => {
-  const proveedores = await listProveedores(req.query.search || '');
+  const proveedores = await listProveedores(req.query.search || '', req.query);
   res.json(proveedores);
 });
 

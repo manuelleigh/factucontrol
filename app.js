@@ -18,6 +18,10 @@ const helpers = require('./utils/helpers');
 const app = express();
 const port = Number(process.env.PORT || 3000);
 const uploadDir = path.resolve(process.cwd(), process.env.UPLOAD_DIR || 'uploads');
+const envWarnings = [];
+
+if (!process.env.DB_NAME) envWarnings.push('DB_NAME');
+if (!process.env.DB_USER) envWarnings.push('DB_USER');
 
 ensureUploadDir(uploadDir);
 
@@ -48,6 +52,9 @@ app.use(errorHandler);
 
 async function start() {
   try {
+    if (envWarnings.length) {
+      console.warn(`Aviso: faltan variables de entorno recomendadas: ${envWarnings.join(', ')}`);
+    }
     await sequelize.authenticate();
     await sequelize.sync();
     app.listen(port, () => {

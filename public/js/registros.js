@@ -43,7 +43,7 @@ function showFormErrors(errors) {
   registroErrors.className = 'col-12 form-errors';
   registroErrors.innerHTML = `
     <strong>Revisa la información ingresada:</strong>
-    <ul class="mb-0 mt-2">${errors.map((error) => `<li>${error}</li>`).join('')}</ul>
+    <ul class="mb-0 mt-2">${errors.map((error) => `<li>${window.appUtils.escapeHtml(error)}</li>`).join('')}</ul>
   `;
 }
 
@@ -58,7 +58,7 @@ function showPaymentErrors(errors) {
   pagoErrors.className = 'form-errors mb-3';
   pagoErrors.innerHTML = `
     <strong>Revisa los datos del pago:</strong>
-    <ul class="mb-0 mt-2">${errors.map((error) => `<li>${error}</li>`).join('')}</ul>
+    <ul class="mb-0 mt-2">${errors.map((error) => `<li>${window.appUtils.escapeHtml(error)}</li>`).join('')}</ul>
   `;
 }
 
@@ -131,8 +131,8 @@ function renderConfirmation(formData) {
     .map(
       ([label, value]) => `
         <article class="confirmation-item">
-          <strong>${label}</strong>
-          <span>${value}</span>
+          <strong>${window.appUtils.escapeHtml(label)}</strong>
+          <span>${window.appUtils.escapeHtml(value)}</span>
         </article>
       `
     )

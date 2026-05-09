@@ -37,6 +37,29 @@
       </article>
     </section>
 
+    <section class="kpi-grid">
+      <article class="kpi-card">
+        <span>Gastos operativos</span>
+        <strong><%= helpers.formatCurrency(dashboard.moduleTotals.Gasto.total) %></strong>
+        <small><%= dashboard.moduleTotals.Gasto.cantidad %> registros.</small>
+      </article>
+      <article class="kpi-card">
+        <span>Compras de bienes</span>
+        <strong><%= helpers.formatCurrency(dashboard.moduleTotals.Compra.total) %></strong>
+        <small><%= dashboard.moduleTotals.Compra.cantidad %> registros.</small>
+      </article>
+      <article class="kpi-card">
+        <span>Top proveedores</span>
+        <strong><%= dashboard.topProviders.length %></strong>
+        <small>Proveedores con mayor volumen registrado.</small>
+      </article>
+      <article class="kpi-card">
+        <span>Registros recientes</span>
+        <strong><%= dashboard.recentRecords.length %></strong>
+        <small>Movimientos visibles en el panel.</small>
+      </article>
+    </section>
+
     <section class="content-grid">
       <article class="panel-card">
         <div class="section-heading">
@@ -94,31 +117,60 @@
       </article>
     </section>
 
-    <section class="panel-card">
-      <div class="section-heading">
-        <div>
-          <span class="eyebrow">Reportes PDF</span>
-          <h3>Generación de reportes</h3>
+    <section class="content-grid">
+      <article class="panel-card">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">Top proveedores</span>
+            <h3>Mayor volumen registrado</h3>
+          </div>
         </div>
-      </div>
-      <div class="report-grid">
-        <form action="/api/reportes/mensual" method="get" target="_blank" class="report-card">
-          <label class="form-label">Reporte mensual</label>
-          <div class="row g-2">
-            <div class="col-6"><input type="number" name="month" min="1" max="12" class="form-control" value="<%= new Date().getMonth() + 1 %>" /></div>
-            <div class="col-6"><input type="number" name="year" min="2020" class="form-control" value="<%= new Date().getFullYear() %>" /></div>
+        <% if (dashboard.topProviders.length) { %>
+          <div class="timeline-list">
+            <% dashboard.topProviders.forEach((item) => { %>
+              <div class="timeline-item">
+                <div class="status-dot pendiente"></div>
+                <div>
+                  <strong><%= item.proveedor %></strong>
+                  <p><%= item.cantidad %> registros</p>
+                </div>
+                <div class="text-end">
+                  <strong><%= helpers.formatCurrency(item.total) %></strong>
+                </div>
+              </div>
+            <% }) %>
           </div>
-          <button class="btn btn-primary mt-3">Generar PDF</button>
-        </form>
-        <form action="/api/reportes/categorias" method="get" target="_blank" class="report-card">
-          <label class="form-label">Resumen por categoría</label>
-          <div class="row g-2">
-            <div class="col-6"><input type="date" name="startDate" class="form-control" /></div>
-            <div class="col-6"><input type="date" name="endDate" class="form-control" /></div>
+        <% } else { %>
+          <p class="empty-state">Todavía no hay proveedores con facturación registrada.</p>
+        <% } %>
+      </article>
+
+      <article class="panel-card">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">Reportes PDF</span>
+            <h3>Generación de reportes</h3>
           </div>
-          <button class="btn btn-outline-primary mt-3">Generar PDF</button>
-        </form>
-      </div>
+        </div>
+        <div class="report-grid">
+          <form action="/api/reportes/mensual" method="get" target="_blank" class="report-card">
+            <label class="form-label">Reporte mensual</label>
+            <div class="row g-2">
+              <div class="col-6"><input type="number" name="month" min="1" max="12" class="form-control" value="<%= new Date().getMonth() + 1 %>" /></div>
+              <div class="col-6"><input type="number" name="year" min="2020" class="form-control" value="<%= new Date().getFullYear() %>" /></div>
+            </div>
+            <button class="btn btn-primary mt-3">Generar PDF</button>
+          </form>
+          <form action="/api/reportes/categorias" method="get" target="_blank" class="report-card">
+            <label class="form-label">Resumen por categoría</label>
+            <div class="row g-2">
+              <div class="col-6"><input type="date" name="startDate" class="form-control" /></div>
+              <div class="col-6"><input type="date" name="endDate" class="form-control" /></div>
+            </div>
+            <button class="btn btn-outline-primary mt-3">Generar PDF</button>
+          </form>
+        </div>
+      </article>
     </section>
   </main>
 </div>

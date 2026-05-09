@@ -1,6 +1,6 @@
 function notFoundHandler(req, res) {
   if (req.path.startsWith('/api/')) {
-    return res.status(404).json({ error: 'Recurso no encontrado.' });
+    return res.status(404).json({ error: 'Recurso no encontrado.', details: null });
   }
 
   return res.status(404).render('error', {

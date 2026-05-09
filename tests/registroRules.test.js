@@ -8,6 +8,7 @@ const {
   validatePaymentDate,
 } = require('../utils/registroRules');
 const { calculateTotal, getEffectiveStatus } = require('../utils/helpers');
+const { normalizePagination } = require('../utils/pagination');
 
 test('calculateTotal applies tax correctly', () => {
   assert.equal(calculateTotal(100, 18), 118);
@@ -59,4 +60,12 @@ test('computeDashboardSummary matches PDF logic for pending upcoming and overdue
   assert.equal(summary.resumen.vencidasCantidad, 1);
   assert.equal(summary.resumen.vencidasMonto, 80);
   assert.equal(summary.distribution[0].categoria, 'Equipos');
+});
+
+test('normalizePagination clamps invalid values', () => {
+  const pagination = normalizePagination({ page: '-4', pageSize: '999' }, { pageSize: 12, maxPageSize: 25 });
+  assert.equal(pagination.page, 1);
+  assert.equal(pagination.pageSize, 25);
+  assert.equal(pagination.limit, 25);
+  assert.equal(pagination.offset, 0);
 });

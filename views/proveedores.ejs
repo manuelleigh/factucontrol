@@ -15,7 +15,7 @@
       <form class="row g-3 align-items-end" method="get">
         <div class="col-md-6">
           <label class="form-label">Buscar</label>
-          <input class="form-control" type="text" name="search" value="<%= search %>" placeholder="Nombre o identificación fiscal" />
+          <input class="form-control" type="text" name="search" value="<%= search %>" placeholder="Nombre, identificación fiscal o giro" />
         </div>
         <div class="col-md-3"><button class="btn btn-outline-primary w-100">Filtrar</button></div>
         <div class="col-md-3"><a href="/proveedores" class="btn btn-light w-100">Limpiar</a></div>
@@ -23,6 +23,10 @@
     </section>
 
     <section class="panel-card">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <small class="text-muted">Mostrando <%= proveedores.length %> registros</small>
+        <small class="text-muted">Página <%= pagination.page %> de <%= pagination.totalPages %></small>
+      </div>
       <div class="table-responsive">
         <table class="table align-middle">
           <thead>
@@ -54,6 +58,19 @@
           </tbody>
         </table>
       </div>
+      <% if (pagination.totalPages > 1) { %>
+        <nav class="mt-4">
+          <ul class="pagination justify-content-center mb-0">
+            <li class="page-item <%= pagination.hasPrev ? '' : 'disabled' %>">
+              <a class="page-link" href="?search=<%= encodeURIComponent(search) %>&page=<%= pagination.page - 1 %>&pageSize=<%= pagination.pageSize %>">Anterior</a>
+            </li>
+            <li class="page-item disabled"><span class="page-link">Página <%= pagination.page %> de <%= pagination.totalPages %></span></li>
+            <li class="page-item <%= pagination.hasNext ? '' : 'disabled' %>">
+              <a class="page-link" href="?search=<%= encodeURIComponent(search) %>&page=<%= pagination.page + 1 %>&pageSize=<%= pagination.pageSize %>">Siguiente</a>
+            </li>
+          </ul>
+        </nav>
+      <% } %>
     </section>
   </main>
 </div>

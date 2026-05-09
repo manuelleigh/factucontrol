@@ -19,7 +19,7 @@ function showProviderErrors(errors) {
   proveedorErrors.className = 'col-12 form-errors';
   proveedorErrors.innerHTML = `
     <strong>Revisa la información del proveedor:</strong>
-    <ul class="mb-0 mt-2">${errors.map((error) => `<li>${error}</li>`).join('')}</ul>
+    <ul class="mb-0 mt-2">${errors.map((error) => `<li>${window.appUtils.escapeHtml(error)}</li>`).join('')}</ul>
   `;
 }
 

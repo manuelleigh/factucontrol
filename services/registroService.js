@@ -3,6 +3,8 @@ const path = require('path');
 const dayjs = require('dayjs');
 const { Op } = require('sequelize');
 const { CompraBien, GastoOperativo, Proveedor } = require('../models');
+const { createHttpError } = require('../utils/httpError');
+const { buildPaginationMeta, normalizePagination } = require('../utils/pagination');
 const {
   COMPRA_CATEGORIAS,
   ESTADOS_BIEN,
@@ -24,10 +26,20 @@ function getDefaultCategories(type) {
   return type === 'compra' ? COMPRA_CATEGORIAS : GASTO_CATEGORIAS;
 }
 
-function buildWhereClause(query = {}) {
+function buildWhereClause(type, query = {}) {
   const where = {};
   if (query.proveedorId) where.proveedorId = query.proveedorId;
   if (query.categoria) where.categoria = query.categoria;
+  if (query.search) {
+    const or = [
+      { numeroFactura: { [Op.like]: `%${query.search}%` } },
+      { concepto: { [Op.like]: `%${query.search}%` } },
+    ];
+    if (type === 'compra') {
+      or.push({ nombreBien: { [Op.like]: `%${query.search}%` } });
+    }
+    where[Op.or] = or;
+  }
   if (query.fechaInicio || query.fechaFin) {
     where.fechaEmision = {};
     if (query.fechaInicio) where.fechaEmision[Op.gte] = query.fechaInicio;
@@ -74,6 +86,15 @@ function validateCommonPayload(payload, type) {
   if (!getDefaultCategories(type).includes(payload.categoria)) {
     errors.categoria = 'La categoría seleccionada no es válida.';
   }
+  if (payload.numeroFactura && payload.numeroFactura.length > 60) {
+    errors.numeroFactura = 'El número de factura no puede superar 60 caracteres.';
+  }
+  if (payload.concepto && payload.concepto.length > 255) {
+    errors.concepto = 'El concepto no puede superar 255 caracteres.';
+  }
+  if (type === 'compra' && payload.nombreBien && payload.nombreBien.length > 150) {
+    errors.nombreBien = 'El nombre del bien no puede superar 150 caracteres.';
+  }
 
   const dateError = validateDateRange(payload.fechaEmision, payload.fechaVencimiento);
   if (dateError) errors.fechaVencimiento = dateError;
@@ -92,9 +113,7 @@ function validateCommonPayload(payload, type) {
 async function ensureProveedorActivo(proveedorId) {
   const proveedor = await Proveedor.findByPk(proveedorId);
   if (!proveedor || !proveedor.activo) {
-    const error = new Error('Debes seleccionar un proveedor activo.');
-    error.statusCode = 400;
-    throw error;
+    throw createHttpError(400, 'Debes seleccionar un proveedor activo.');
   }
 }
 
@@ -134,17 +153,38 @@ function safeDeleteUpload(filePath) {
   if (fs.existsSync(absolutePath)) fs.unlinkSync(absolutePath);
 }
 
+async function ensureUniqueInvoice(type, payload, currentId = null) {
+  const model = getModel(type);
+  const where = {
+    proveedorId: payload.proveedorId,
+    numeroFactura: payload.numeroFactura,
+  };
+  if (currentId) where.id = { [Op.ne]: currentId };
+
+  const existing = await model.findOne({ where });
+  if (existing) {
+    throw createHttpError(409, 'Ya existe una factura con ese número para este proveedor.');
+  }
+}
+
 async function listRegistros(type, query = {}) {
   const model = getModel(type);
   await syncExpiredStatuses(model);
+  const pagination = normalizePagination(query, { pageSize: 10, maxPageSize: 50 });
 
-  const records = await model.findAll({
-    where: buildWhereClause(query),
+  const rows = await model.findAll({
+    where: buildWhereClause(type, query),
     include: [{ model: Proveedor, as: 'proveedor' }],
     order: [['fechaEmision', 'DESC']],
   });
 
-  return appendEffectiveStatus(records, query.estado);
+  const records = appendEffectiveStatus(rows, query.estado);
+  const totalItems = records.length;
+  const pageRecords = records.slice(pagination.offset, pagination.offset + pagination.limit);
+  return {
+    items: pageRecords,
+    pagination: buildPaginationMeta(pagination.page, pagination.pageSize, totalItems),
+  };
 }
 
 async function createRegistro(type, body, file) {
@@ -154,13 +194,11 @@ async function createRegistro(type, body, file) {
 
   if (Object.keys(errors).length) {
     if (file) safeDeleteUpload(`/uploads/${file.filename}`);
-    const error = new Error('No se pudo registrar la factura.');
-    error.statusCode = 400;
-    error.details = errors;
-    throw error;
+    throw createHttpError(400, 'No se pudo registrar la factura.', errors);
   }
 
   await ensureProveedorActivo(payload.proveedorId);
+  await ensureUniqueInvoice(type, payload);
   return model.create(payload);
 }
 
@@ -169,22 +207,18 @@ async function updateRegistro(type, id, body, file) {
   const record = await model.findByPk(id);
   if (!record) {
     if (file) safeDeleteUpload(`/uploads/${file.filename}`);
-    const error = new Error('Registro no encontrado.');
-    error.statusCode = 404;
-    throw error;
+    throw createHttpError(404, 'Registro no encontrado.');
   }
 
   const payload = buildPayload(body, file, type, record);
   const errors = validateCommonPayload(payload, type);
   if (Object.keys(errors).length) {
     if (file) safeDeleteUpload(`/uploads/${file.filename}`);
-    const error = new Error('No se pudo actualizar la factura.');
-    error.statusCode = 400;
-    error.details = errors;
-    throw error;
+    throw createHttpError(400, 'No se pudo actualizar la factura.', errors);
   }
 
   await ensureProveedorActivo(payload.proveedorId);
+  await ensureUniqueInvoice(type, payload, record.id);
   const previousAttachment = record.archivoAdjunto;
   await record.update(payload);
 
@@ -199,9 +233,7 @@ async function marcarComoPagada(type, id, body) {
   const model = getModel(type);
   const record = await model.findByPk(id);
   if (!record) {
-    const error = new Error('Registro no encontrado.');
-    error.statusCode = 404;
-    throw error;
+    throw createHttpError(404, 'Registro no encontrado.');
   }
 
   const errors = {};
@@ -212,10 +244,7 @@ async function marcarComoPagada(type, id, body) {
   }
 
   if (Object.keys(errors).length) {
-    const error = new Error('No se pudo registrar el pago.');
-    error.statusCode = 400;
-    error.details = errors;
-    throw error;
+    throw createHttpError(400, 'No se pudo registrar el pago.', errors);
   }
 
   await record.update({
@@ -245,9 +274,32 @@ async function getDashboardData() {
   });
 
   const summary = computeDashboardSummary(registros);
+  const moduleTotals = registros.reduce(
+    (acc, record) => {
+      acc[record.modulo].cantidad += 1;
+      acc[record.modulo].total += Number(record.total);
+      return acc;
+    },
+    {
+      Gasto: { cantidad: 0, total: 0 },
+      Compra: { cantidad: 0, total: 0 },
+    }
+  );
+  const providerTotals = registros.reduce((acc, record) => {
+    const key = record.proveedor?.nombre || 'Sin proveedor';
+    const current = acc[key] || { proveedor: key, total: 0, cantidad: 0 };
+    current.total += Number(record.total);
+    current.cantidad += 1;
+    acc[key] = current;
+    return acc;
+  }, {});
 
   return {
     ...summary,
+    moduleTotals,
+    topProviders: Object.values(providerTotals)
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5),
     recentRecords: registros
       .sort((a, b) => new Date(b.fechaRegistro) - new Date(a.fechaRegistro))
       .slice(0, 8),
@@ -262,6 +314,10 @@ async function getReportDataByMonth(month, year) {
 }
 
 async function getReportDataByRange(startDate, endDate) {
+  if (dayjs(endDate).isBefore(dayjs(startDate), 'day')) {
+    throw createHttpError(400, 'La fecha final no puede ser anterior a la fecha inicial.');
+  }
+
   await Promise.all([syncExpiredStatuses(GastoOperativo), syncExpiredStatuses(CompraBien)]);
 
   const where = { fechaEmision: { [Op.gte]: startDate, [Op.lte]: endDate } };
