@@ -173,6 +173,39 @@ a { text-decoration: none; }
   font-size: 0.85rem;
   color: var(--muted);
 }
+.ai-chat {
+  display: grid;
+  gap: 12px;
+  border-top: 1px solid rgba(29,42,48,0.08);
+  padding-top: 8px;
+}
+.ai-chat-log {
+  display: grid;
+  gap: 10px;
+  max-height: 280px;
+  overflow: auto;
+  padding-right: 4px;
+}
+.ai-chat-bubble {
+  border-radius: 18px;
+  padding: 12px 14px;
+  max-width: 80%;
+  line-height: 1.45;
+}
+.ai-chat-bubble.user {
+  margin-left: auto;
+  background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+  color: #fff;
+}
+.ai-chat-bubble.bot {
+  background: rgba(29,107,97,0.08);
+  color: var(--ink);
+}
+.ai-chat-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
 .login-page {
   min-height: 100vh;
   display: grid;

@@ -85,6 +85,7 @@
                   <td class="text-end">
                     <button class="btn btn-sm btn-light js-edit-registro" data-registro='<%- JSON.stringify(record) %>' data-bs-toggle="modal" data-bs-target="#registroModal">Editar</button>
                     <% if (record.estadoEfectivo !== 'Pagada') { %><button class="btn btn-sm btn-outline-success js-pay-registro" data-id="<%= record.id %>" data-numero="<%= record.numeroFactura %>" data-bs-toggle="modal" data-bs-target="#pagoModal">Marcar pagada</button><% } %>
+                    <button class="btn btn-sm btn-outline-primary js-ai-registro" data-id="<%= record.id %>" data-type="<%= pageType %>" data-bs-toggle="modal" data-bs-target="#aiRegistroModal">IA</button>
                   </td>
                 </tr>
               <% }) %>
@@ -179,6 +180,23 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Volver a editar</button>
         <button type="button" class="btn btn-primary" id="confirmSaveButton">Confirmar guardado</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="aiRegistroModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <span class="eyebrow">Análisis IA</span>
+          <h5 class="modal-title" id="aiRegistroTitle">Factura</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="ai-meta mb-3" id="aiRegistroMeta">Cargando análisis...</div>
+        <div class="ai-result" id="aiRegistroResult"></div>
       </div>
     </div>
   </div>

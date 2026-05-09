@@ -48,6 +48,7 @@
                   <td><span class="status-badge <%= proveedor.activo ? 'pendiente' : 'vencida' %>"><%= proveedor.activo ? 'Activo' : 'Inactivo' %></span></td>
                   <td class="text-end">
                     <button class="btn btn-sm btn-light js-edit-proveedor" data-proveedor='<%- JSON.stringify(proveedor) %>' data-bs-toggle="modal" data-bs-target="#proveedorModal">Editar</button>
+                    <button class="btn btn-sm btn-outline-primary js-ai-proveedor" data-id="<%= proveedor.id %>" data-bs-toggle="modal" data-bs-target="#aiProveedorModal">IA</button>
                     <% if (proveedor.activo) { %><button class="btn btn-sm btn-outline-danger js-deactivate-proveedor" data-id="<%= proveedor.id %>">Desactivar</button><% } %>
                   </td>
                 </tr>
@@ -94,6 +95,23 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
         <button type="submit" form="proveedorForm" class="btn btn-primary">Guardar proveedor</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="aiProveedorModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <span class="eyebrow">Análisis IA</span>
+          <h5 class="modal-title" id="aiProveedorTitle">Proveedor</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="ai-meta mb-3" id="aiProveedorMeta">Cargando análisis...</div>
+        <div class="ai-result" id="aiProveedorResult"></div>
       </div>
     </div>
   </div>

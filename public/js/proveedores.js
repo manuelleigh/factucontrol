@@ -1,6 +1,9 @@
 const proveedorForm = document.getElementById('proveedorForm');
 const proveedorModal = document.getElementById('proveedorModal');
 const proveedorErrors = document.getElementById('proveedorErrors');
+const aiProveedorTitle = document.getElementById('aiProveedorTitle');
+const aiProveedorMeta = document.getElementById('aiProveedorMeta');
+const aiProveedorResult = document.getElementById('aiProveedorResult');
 
 function clearProviderValidation() {
   if (proveedorErrors) {
@@ -30,6 +33,26 @@ function markProviderFieldErrors(details = {}) {
     input.classList.add('is-invalid');
     input.setAttribute('title', message);
   });
+}
+
+function renderInsightBlock(insight = {}) {
+  const renderList = (label, items) => {
+    if (!Array.isArray(items) || !items.length) return '';
+    return `
+      <div class="ai-block">
+        <strong>${window.appUtils.escapeHtml(label)}</strong>
+        <ul>${items.map((item) => `<li>${window.appUtils.escapeHtml(item)}</li>`).join('')}</ul>
+      </div>
+    `;
+  };
+
+  return `
+    <div class="ai-title">${window.appUtils.escapeHtml(insight.titulo || 'Análisis IA')}</div>
+    <p>${window.appUtils.escapeHtml(insight.resumen || 'Sin resumen disponible.')}</p>
+    ${renderList('Alertas', insight.alertas)}
+    ${renderList('Acciones', insight.acciones)}
+    ${insight.prioridad ? `<div class="ai-footnote">Prioridad sugerida: ${window.appUtils.escapeHtml(insight.prioridad)}</div>` : ''}
+  `;
 }
 
 if (proveedorForm) {
@@ -88,3 +111,27 @@ if (proveedorForm) {
     });
   });
 }
+
+document.querySelectorAll('.js-ai-proveedor').forEach((button) => {
+  button.addEventListener('click', async () => {
+    const id = button.dataset.id;
+    if (aiProveedorTitle) aiProveedorTitle.textContent = 'Proveedor';
+    if (aiProveedorMeta) aiProveedorMeta.textContent = 'Cargando análisis...';
+    if (aiProveedorResult) aiProveedorResult.textContent = 'Consultando IA...';
+
+    try {
+      const data = await window.appUtils.request(`/api/ia/provider/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+
+      if (aiProveedorTitle) aiProveedorTitle.textContent = data.provider?.nombre || 'Proveedor';
+      if (aiProveedorMeta) aiProveedorMeta.textContent = `Modelo: ${data.model}${data.modelSource ? ` · fuente: ${data.modelSource}` : ''}`;
+      if (aiProveedorResult) aiProveedorResult.innerHTML = renderInsightBlock(data.insight);
+    } catch (error) {
+      if (aiProveedorMeta) aiProveedorMeta.textContent = 'No se pudo completar el análisis.';
+      if (aiProveedorResult) aiProveedorResult.textContent = error.message || 'Error inesperado.';
+    }
+  });
+});

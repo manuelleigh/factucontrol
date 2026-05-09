@@ -5,6 +5,9 @@ const confirmSummary = document.getElementById('confirmSummary');
 const confirmSaveButton = document.getElementById('confirmSaveButton');
 const registroErrors = document.getElementById('registroErrors');
 const pagoErrors = document.getElementById('pagoErrors');
+const aiRegistroTitle = document.getElementById('aiRegistroTitle');
+const aiRegistroMeta = document.getElementById('aiRegistroMeta');
+const aiRegistroResult = document.getElementById('aiRegistroResult');
 
 let pendingSubmission = null;
 
@@ -144,6 +147,26 @@ function extractApiError(error, fallback) {
   return [error?.error || fallback];
 }
 
+function renderInsightBlock(insight = {}) {
+  const renderList = (label, items) => {
+    if (!Array.isArray(items) || !items.length) return '';
+    return `
+      <div class="ai-block">
+        <strong>${window.appUtils.escapeHtml(label)}</strong>
+        <ul>${items.map((item) => `<li>${window.appUtils.escapeHtml(item)}</li>`).join('')}</ul>
+      </div>
+    `;
+  };
+
+  return `
+    <div class="ai-title">${window.appUtils.escapeHtml(insight.titulo || 'Análisis IA')}</div>
+    <p>${window.appUtils.escapeHtml(insight.resumen || 'Sin resumen disponible.')}</p>
+    ${renderList('Alertas', insight.alertas)}
+    ${renderList('Acciones', insight.acciones)}
+    ${insight.prioridad ? `<div class="ai-footnote">Prioridad sugerida: ${window.appUtils.escapeHtml(insight.prioridad)}</div>` : ''}
+  `;
+}
+
 if (registroForm) {
   const registroModal = document.getElementById('registroModal');
   const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
@@ -262,3 +285,28 @@ if (pagoForm && registroForm) {
     }
   });
 }
+
+document.querySelectorAll('.js-ai-registro').forEach((button) => {
+  button.addEventListener('click', async () => {
+    const type = button.dataset.type;
+    const id = button.dataset.id;
+    if (aiRegistroTitle) aiRegistroTitle.textContent = 'Factura';
+    if (aiRegistroMeta) aiRegistroMeta.textContent = 'Cargando análisis...';
+    if (aiRegistroResult) aiRegistroResult.textContent = 'Consultando IA...';
+
+    try {
+      const data = await window.appUtils.request(`/api/ia/record/${type}/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+
+      if (aiRegistroTitle) aiRegistroTitle.textContent = data.record?.numeroFactura || 'Factura';
+      if (aiRegistroMeta) aiRegistroMeta.textContent = `Modelo: ${data.model}${data.modelSource ? ` · fuente: ${data.modelSource}` : ''}`;
+      if (aiRegistroResult) aiRegistroResult.innerHTML = renderInsightBlock(data.insight);
+    } catch (error) {
+      if (aiRegistroMeta) aiRegistroMeta.textContent = 'No se pudo completar el análisis.';
+      if (aiRegistroResult) aiRegistroResult.textContent = error.message || 'Error inesperado.';
+    }
+  });
+});

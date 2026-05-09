@@ -1,6 +1,11 @@
 const aiButton = document.getElementById('aiDashboardButton');
 const aiResult = document.getElementById('aiDashboardResult');
 const aiMeta = document.getElementById('aiDashboardMeta');
+const aiChatForm = document.getElementById('aiChatForm');
+const aiChatInput = document.getElementById('aiChatInput');
+const aiChatLog = document.getElementById('aiChatLog');
+
+const chatHistory = [];
 
 function renderList(label, items) {
   if (!Array.isArray(items) || !items.length) return '';
@@ -12,6 +17,15 @@ function renderList(label, items) {
       </ul>
     </div>
   `;
+}
+
+function appendChatBubble(content, role = 'bot') {
+  if (!aiChatLog) return;
+  const bubble = document.createElement('div');
+  bubble.className = `ai-chat-bubble ${role}`;
+  bubble.textContent = content;
+  aiChatLog.appendChild(bubble);
+  aiChatLog.scrollTop = aiChatLog.scrollHeight;
 }
 
 if (aiButton && aiResult && aiMeta) {
@@ -44,6 +58,43 @@ if (aiButton && aiResult && aiMeta) {
     } finally {
       aiButton.disabled = false;
       aiButton.textContent = 'Analizar ahora';
+    }
+  });
+}
+
+if (aiChatForm && aiChatInput) {
+  aiChatForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const text = aiChatInput.value.trim();
+    if (!text) return;
+
+    appendChatBubble(text, 'user');
+    chatHistory.push({ role: 'user', content: text });
+    aiChatInput.value = '';
+    appendChatBubble('Pensando...', 'bot');
+
+    try {
+      const data = await window.appUtils.request('/api/ia/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: chatHistory }),
+      });
+
+      const response = data.response || {};
+      const lastBubble = aiChatLog.lastElementChild;
+      if (lastBubble && lastBubble.classList.contains('bot')) {
+        lastBubble.remove();
+      }
+
+      const answer = response.answer || response.resumen || 'No se recibió una respuesta.';
+      appendChatBubble(answer, 'bot');
+      chatHistory.push({ role: 'assistant', content: answer });
+    } catch (error) {
+      const lastBubble = aiChatLog.lastElementChild;
+      if (lastBubble && lastBubble.classList.contains('bot')) {
+        lastBubble.remove();
+      }
+      appendChatBubble(error.message || 'No se pudo responder.', 'bot');
     }
   });
 }
