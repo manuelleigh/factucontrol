@@ -21,6 +21,7 @@ const categoriaRoutes = require('./routes/categorias');
 const presupuestoRoutes = require('./routes/presupuestos');
 const cotizacionRoutes = require('./routes/cotizaciones');
 const reporteRoutes = require('./routes/reportes');
+const asistenteRoutes = require('./routes/asistente');
 const apiController = require('./controllers/apiController');
 const { requireAuth } = require('./middleware/auth');
 const { hydrateCurrentUser } = require('./middleware/auth');
@@ -89,6 +90,7 @@ app.use('/api/categorias', categoriaRoutes);
 app.use('/api/presupuestos', presupuestoRoutes);
 app.use('/api/cotizaciones', cotizacionRoutes);
 app.use('/api/reportes', reporteRoutes);
+app.use('/api/asistente', asistenteRoutes);
 app.get('/api/dashboard', requireAuth, apiController.dashboard);
 app.get('/api/rentabilidad', requireAuth, apiController.rentabilidad);
 

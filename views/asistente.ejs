@@ -1,0 +1,143 @@
+<%- include('partials/head') %>
+<div class="app-shell">
+  <%- include('partials/nav') %>
+  <main class="app-main">
+    <section class="hero-card hero-card-dashboard">
+      <div>
+        <span class="eyebrow">Asistente ejecutivo</span>
+        <h2>IA con contexto real de GestPyme</h2>
+        <p>Pregunta por riesgos, rentabilidad, cobros o decisiones operativas. El asistente usa el periodo actual y las alertas del negocio.</p>
+        <div class="hero-chips">
+          <span class="hero-chip accent">
+            <strong><%= assistant.enabled ? 'Groq conectado' : 'Modo local' %></strong>
+            <%= assistant.provider %> · <%= assistant.model %>
+          </span>
+          <span class="hero-chip">
+            <strong><%= snapshot.summary.profitableCount %>/<%= snapshot.rentabilidad.length %></strong>
+            Obras con margen positivo
+          </span>
+          <span class="hero-chip">
+            <strong><%= snapshot.topAlerts.length %></strong>
+            Alertas prioritarias visibles
+          </span>
+        </div>
+      </div>
+      <div class="hero-actions-stacked">
+        <div class="hero-highlight">
+          <span class="eyebrow">Periodo de analisis</span>
+          <strong><%= snapshot.periodLabel %></strong>
+          <small>Contexto construido desde dashboard y rentabilidad.</small>
+        </div>
+        <div class="hero-actions">
+          <a class="btn btn-outline-light" href="/">Ir al dashboard</a>
+          <a class="btn btn-light" href="/reportes">Ver reportes</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="assistant-grid">
+      <article class="panel-card assistant-chat-card">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">Consulta</span>
+            <h3>Pregunta al asistente</h3>
+          </div>
+        </div>
+
+        <form id="assistantForm" class="assistant-form">
+          <div class="mb-3">
+            <label class="form-label">Pregunta</label>
+            <textarea class="form-control assistant-textarea" name="question" rows="4" placeholder="Ejemplo: resume el mes y dime qué debo atacar primero"></textarea>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label">Enfoque</label>
+              <select class="form-select" name="scope">
+                <% scopes.forEach((scope) => { %>
+                  <option value="<%= scope.value %>" <%= currentScope === scope.value ? 'selected' : '' %>><%= scope.label %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Mes</label>
+              <input class="form-control" type="number" name="month" min="1" max="12" value="<%= snapshot.currentMonth %>" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Anio</label>
+              <input class="form-control" type="number" name="year" min="2020" value="<%= snapshot.currentYear %>" />
+            </div>
+          </div>
+
+          <div class="assistant-shortcuts mb-3">
+            <% snapshot.quickActions.forEach((prompt) => { %>
+              <button class="btn btn-outline-primary btn-sm js-assistant-prompt" type="button" data-prompt="<%= prompt %>"><%= prompt %></button>
+            <% }) %>
+          </div>
+
+          <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-primary" type="submit">Analizar negocio</button>
+            <button class="btn btn-outline-primary js-assistant-clear" type="button">Limpiar historial</button>
+          </div>
+        </form>
+
+        <div id="assistantLog" class="assistant-log mt-4"></div>
+      </article>
+
+      <aside class="panel-card assistant-context-card">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">Contexto</span>
+            <h3>Lectura resumida</h3>
+          </div>
+        </div>
+
+        <div class="assistant-summary-grid">
+          <% snapshot.summaryCards.forEach((card) => { %>
+            <article class="assistant-summary-card">
+              <span class="eyebrow"><%= card.label %></span>
+              <strong><%= card.value %></strong>
+              <p><%= card.note %></p>
+            </article>
+          <% }) %>
+        </div>
+
+        <div class="assistant-list-block">
+          <span class="eyebrow">Alertas prioritarias</span>
+          <% if (snapshot.topAlerts.length) { %>
+            <ul class="assistant-list">
+              <% snapshot.topAlerts.forEach((alerta) => { %>
+                <li><%= alerta %></li>
+              <% }) %>
+            </ul>
+          <% } else { %>
+            <p class="empty-state">No hay alertas relevantes en este momento.</p>
+          <% } %>
+        </div>
+
+        <div class="assistant-list-block">
+          <span class="eyebrow">Recomendaciones base</span>
+          <ul class="assistant-list">
+            <li>Prioriza cobros vencidos y obras con margen bajo.</li>
+            <li>Revisa categorias que superan el 75% del presupuesto.</li>
+            <li>Usa el asistente para convertir alertas en acciones concretas.</li>
+          </ul>
+        </div>
+      </aside>
+    </section>
+  </main>
+</div>
+
+<script>
+  window.asistentePage = <%- JSON.stringify({
+    endpoint: '/api/asistente/consultar',
+    assistant,
+    snapshot: {
+      currentMonth: snapshot.currentMonth,
+      currentYear: snapshot.currentYear,
+      periodLabel: snapshot.periodLabel,
+      summaryCards: snapshot.summaryCards,
+    },
+  }) %>;
+</script>
+<%- include('partials/footer') %>

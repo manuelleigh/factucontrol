@@ -231,6 +231,156 @@ function renderRentabilityChart() {
   });
 }
 
+function formatAssistantHtml(text) {
+  return escapeHtml(String(text || '')).replace(/\n/g, '<br />');
+}
+
+function renderAssistantPage() {
+  const page = window.asistentePage;
+  const form = document.getElementById('assistantForm');
+  const log = document.getElementById('assistantLog');
+  if (!page || !form || !log) return;
+
+  const questionField = form.elements.question;
+  const submitButton = form.querySelector('button[type="submit"]');
+  const clearButton = document.querySelector('.js-assistant-clear');
+  const promptButtons = document.querySelectorAll('.js-assistant-prompt');
+  const assistantLabel = `${page.assistant.enabled ? 'Groq' : 'Modo local'} · ${page.assistant.model}`;
+  const summary = page.snapshot.summaryCards || [];
+  const welcomeText = [
+    `Estoy listo para revisar ${page.snapshot.periodLabel}.`,
+    summary.length ? `Resultado del mes: ${summary[0]?.value || 'N/A'}.` : null,
+    summary.length ? `Alertas activas: ${summary[1]?.value || 'N/A'}.` : null,
+    'Hazme una pregunta sobre riesgos, rentabilidad, reportes o decisiones operativas.',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  let messages = [
+    {
+      role: 'assistant',
+      meta: assistantLabel,
+      text: welcomeText,
+      keyFindings: summary.slice(0, 3).map((item) => `${item.label}: ${item.value}`),
+    },
+  ];
+
+  function renderMessages() {
+    if (!messages.length) {
+      log.innerHTML = '<p class="empty-state">Aun no hay consultas registradas.</p>';
+      return;
+    }
+
+    log.innerHTML = messages
+      .map((message) => {
+        const isUser = message.role === 'user';
+        const metaLabel = message.meta || (isUser ? 'Tu consulta' : assistantLabel);
+        const chips = Array.isArray(message.recommendations) && message.recommendations.length
+          ? `<div class="assistant-chips">${message.recommendations
+              .map((item) => `<span class="assistant-chip">${escapeHtml(item)}</span>`)
+              .join('')}</div>`
+          : '';
+        const findings = Array.isArray(message.keyFindings) && message.keyFindings.length
+          ? `<div class="assistant-findings">${message.keyFindings
+              .map((item) => `<span class="assistant-finding">${escapeHtml(item)}</span>`)
+              .join('')}</div>`
+          : '';
+        const warning = message.warning ? `<div class="assistant-warning">${escapeHtml(message.warning)}</div>` : '';
+        return `
+          <article class="assistant-message ${isUser ? 'user' : 'bot'}">
+            <div class="assistant-message-meta">${escapeHtml(metaLabel)}</div>
+            <div class="assistant-message-body">${formatAssistantHtml(message.text)}</div>
+            ${chips}
+            ${findings}
+            ${warning}
+          </article>
+        `;
+      })
+      .join('');
+
+    log.scrollTop = log.scrollHeight;
+  }
+
+  promptButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      if (!questionField) return;
+      questionField.value = button.dataset.prompt || '';
+      questionField.focus();
+    });
+  });
+
+  clearButton?.addEventListener('click', () => {
+    messages = [messages[0]];
+    renderMessages();
+  });
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.dataset.originalText = submitButton.textContent || 'Analizar negocio';
+      submitButton.textContent = 'Analizando...';
+    }
+
+    const formData = new FormData(form);
+    const question = String(formData.get('question') || '').trim();
+    if (!question) {
+      showToast('Escribe una pregunta para analizar.', 'danger');
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = submitButton.dataset.originalText || 'Analizar negocio';
+      }
+      return;
+    }
+
+    const userMessage = {
+      role: 'user',
+      meta: 'Consulta enviada',
+      text: question,
+    };
+    messages.push(userMessage);
+    renderMessages();
+
+    try {
+      const payload = new URLSearchParams();
+      formData.forEach((value, key) => payload.append(key, value));
+      const result = await request(page.endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+        body: payload,
+      });
+
+      messages.push({
+        role: 'assistant',
+        meta: `${result.provider || assistantLabel}${result.model ? ` · ${result.model}` : ''}`,
+        text: result.answer || 'No se pudo generar una respuesta.',
+        recommendations: result.recommendations || [],
+        keyFindings: result.keyFindings || [],
+        warning: result.warning || null,
+      });
+      renderMessages();
+      if (questionField) questionField.value = '';
+      showToast(result.mode === 'groq' ? 'Respuesta generada por Groq.' : 'Respuesta generada en modo local.');
+    } catch (error) {
+      messages.push({
+        role: 'assistant',
+        meta: 'Error',
+        text: error.message || 'No se pudo consultar el asistente.',
+        warning: error.details ? Object.values(error.details).join(' ') : null,
+      });
+      renderMessages();
+      showToast(error.message || 'No se pudo consultar el asistente.', 'danger');
+    } finally {
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = submitButton.dataset.originalText || 'Analizar negocio';
+      }
+    }
+  });
+
+  renderMessages();
+}
+
 function bindEntityPage() {
   const page = window.gestpymePage;
   const form = document.querySelector('.entity-form');
@@ -331,3 +481,4 @@ bindLogin();
 bindEntityPage();
 renderDashboardCharts();
 renderRentabilityChart();
+renderAssistantPage();

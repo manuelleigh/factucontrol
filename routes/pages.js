@@ -13,6 +13,7 @@ const {
   renderRentabilidad,
   renderReportes,
 } = require('../controllers/pageController');
+const { renderAsistente } = require('../controllers/asistenteController');
 const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -30,5 +31,6 @@ router.get('/gastos', renderGastos);
 router.get('/compras', renderCompras);
 router.get('/rentabilidad', renderRentabilidad);
 router.get('/reportes', renderReportes);
+router.get('/asistente', renderAsistente);
 
 module.exports = router;

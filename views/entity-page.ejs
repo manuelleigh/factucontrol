@@ -21,7 +21,7 @@
           <p class="page-muted mb-0">Usa filtros, orden y paginacion para explorar el modulo con mas precision.</p>
         </div>
         <div class="list-toolbar-actions">
-          <span class="status-pill muted">Orden: <%= sort ? sort : 'default' %> · <%= dir === 'desc' ? 'desc' : 'asc' %></span>
+          <span class="status-pill muted">Orden: <%= sort ? sort : 'default' %> &middot; <%= dir === 'desc' ? 'desc' : 'asc' %></span>
           <% if (query && Object.entries(query).some(([key, value]) => value && !['page', 'pageSize', 'sort', 'dir'].includes(key))) { %>
             <span class="status-pill success">Filtros activos</span>
           <% } %>
