@@ -236,6 +236,8 @@ function bindEntityPage() {
   const form = document.querySelector('.entity-form');
   const modal = document.getElementById('entityModal');
   const errorBox = form?.querySelector('.js-form-errors');
+  const submitButton = form?.querySelector('button[type="submit"]');
+  let isSubmitting = false;
 
   document.querySelectorAll('.js-edit-record').forEach((button) => {
     button.addEventListener('click', () => {
@@ -265,6 +267,13 @@ function bindEntityPage() {
 
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (isSubmitting) return;
+    isSubmitting = true;
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.dataset.originalText = submitButton.textContent || 'Guardar';
+      submitButton.textContent = 'Guardando...';
+    }
     clearErrors(form);
     try {
       await submitEntityForm(form);
@@ -273,6 +282,12 @@ function bindEntityPage() {
     } catch (error) {
       const messages = error.details ? Object.values(error.details) : [error.message];
       showErrors(form, messages);
+    } finally {
+      isSubmitting = false;
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = submitButton.dataset.originalText || 'Guardar';
+      }
     }
   });
 
