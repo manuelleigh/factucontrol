@@ -1,21 +1,62 @@
 <%- include('partials/head') %>
+<%
+  const totalIngresos = rentabilidad.reduce((sum, item) => sum + Number(item.ingresos || 0), 0);
+  const totalEgresos = rentabilidad.reduce((sum, item) => sum + Number(item.egresos || 0), 0);
+  const totalUtilidad = rentabilidad.reduce((sum, item) => sum + Number(item.utilidad || 0), 0);
+  const avgMargin = rentabilidad.length
+    ? rentabilidad.reduce((sum, item) => sum + Number(item.margen || 0), 0) / rentabilidad.length
+    : 0;
+  const bestWork = rentabilidad[0];
+  const worstWork = rentabilidad.length ? rentabilidad[rentabilidad.length - 1] : null;
+%>
 <div class="app-shell">
   <%- include('partials/nav') %>
   <main class="app-main">
-    <section class="hero-card">
+    <section class="hero-card hero-card-dashboard">
       <div>
         <span class="eyebrow">Analisis financiero</span>
         <h2>Rentabilidad por obra</h2>
-        <p>Compara ingresos, egresos, utilidad y margen por proyecto.</p>
+        <p>Compara ingresos, egresos, utilidad y margen por proyecto con una lectura ejecutiva.</p>
       </div>
-      <div class="hero-actions">
-        <a class="btn btn-light" href="/reportes">Descargas</a>
+      <div class="hero-actions-stacked">
+        <div class="hero-actions">
+          <a class="btn btn-light" href="/reportes">Descargas</a>
+          <a class="btn btn-outline-light" href="/obras">Ver obras</a>
+        </div>
+        <div class="hero-highlight">
+          <span class="eyebrow">Utilidad total</span>
+          <strong class="<%= totalUtilidad >= 0 ? 'text-success' : 'text-danger' %>"><%= helpers.formatCurrency(totalUtilidad) %></strong>
+          <small>Ingresos: <%= helpers.formatCurrency(totalIngresos) %> &middot; Egresos: <%= helpers.formatCurrency(totalEgresos) %></small>
+        </div>
       </div>
+    </section>
+
+    <section class="kpi-grid rentability-kpis">
+      <article class="kpi-card kpi-accent">
+        <span class="eyebrow">Utilidad total</span>
+        <strong class="<%= totalUtilidad >= 0 ? 'text-success' : 'text-danger' %>"><%= helpers.formatCurrency(totalUtilidad) %></strong>
+        <small class="text-muted">Resultado acumulado de todas las obras</small>
+      </article>
+      <article class="kpi-card kpi-accent kpi-positive">
+        <span class="eyebrow">Margen promedio</span>
+        <strong><%= avgMargin.toFixed(2) %>%</strong>
+        <small class="text-muted">Promedio simple entre proyectos</small>
+      </article>
+      <article class="kpi-card kpi-accent">
+        <span class="eyebrow">Mejor obra</span>
+        <strong><%= bestWork ? bestWork.nombre : 'Sin datos' %></strong>
+        <small class="text-muted"><%= bestWork ? helpers.formatCurrency(bestWork.utilidad) : 'No disponible' %></small>
+      </article>
+      <article class="kpi-card kpi-accent kpi-neutral">
+        <span class="eyebrow">Menor rendimiento</span>
+        <strong><%= worstWork ? worstWork.nombre : 'Sin datos' %></strong>
+        <small class="text-muted"><%= worstWork ? `${Number(worstWork.margen || 0).toFixed(2)}%` : 'No disponible' %></small>
+      </article>
     </section>
 
     <section class="panel-card">
       <div class="table-responsive">
-        <table class="table align-middle">
+        <table class="table align-middle premium-table">
           <thead>
             <tr>
               <th>Obra</th>
@@ -29,12 +70,17 @@
           <tbody>
             <% rentabilidad.forEach((item) => { %>
               <tr class="table-<%= item.color %>">
-                <td><strong><%= item.nombre %></strong></td>
+                <td>
+                  <strong><%= item.nombre %></strong>
+                  <div class="table-subtle">Ejecucion financiera por proyecto</div>
+                </td>
                 <td><%= item.cliente?.razonSocial || 'Sin cliente' %></td>
                 <td><%= helpers.formatCurrency(item.ingresos) %></td>
                 <td><%= helpers.formatCurrency(item.egresos) %></td>
-                <td><%= helpers.formatCurrency(item.utilidad) %></td>
-                <td><%= Number(item.margen || 0).toFixed(2) %>%</td>
+                <td class="<%= item.utilidad >= 0 ? 'text-success' : 'text-danger' %>"><strong><%= helpers.formatCurrency(item.utilidad) %></strong></td>
+                <td>
+                  <span class="status-pill <%= item.color %>"><%= Number(item.margen || 0).toFixed(2) %>%</span>
+                </td>
               </tr>
             <% }) %>
           </tbody>
@@ -43,6 +89,12 @@
     </section>
 
     <section class="panel-card">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">Comparacion grafica</span>
+          <h3>Ingresos y utilidad por obra</h3>
+        </div>
+      </div>
       <canvas id="chartRentability" height="170"></canvas>
     </section>
   </main>

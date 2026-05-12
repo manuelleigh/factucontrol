@@ -7,14 +7,37 @@
         <span class="eyebrow">Resumen general</span>
         <h2>Dashboard GestPyme</h2>
         <p>Monitorea obras, cobros, gastos y rentabilidad con una lectura visual mas clara.</p>
+        <div class="hero-chips">
+          <span class="hero-chip accent">
+            <strong><%= dashboard.resumen.alertasActivas %></strong>
+            Alertas activas
+          </span>
+          <span class="hero-chip">
+            <strong><%= dashboard.resumen.presupuestosPendientes %></strong>
+            Presupuestos pendientes
+          </span>
+          <span class="hero-chip">
+            <strong><%= dashboard.resumen.cotizacionesPendientes %></strong>
+            Cotizaciones pendientes
+          </span>
+        </div>
       </div>
-      <form class="hero-actions" method="get">
-        <input class="form-control" type="number" name="month" min="1" max="12" value="<%= dashboard.currentMonth %>" style="width: 120px;" />
-        <input class="form-control" type="number" name="year" min="2020" value="<%= dashboard.currentYear %>" style="width: 140px;" />
-        <button class="btn btn-light" type="submit">Actualizar</button>
-        <a class="btn btn-outline-light" href="/reportes">Ir a reportes</a>
-        <a class="btn btn-outline-light" href="/rentabilidad">Ver rentabilidad</a>
-      </form>
+      <div class="hero-actions-stacked">
+        <form class="hero-actions hero-period-form" method="get">
+          <input class="form-control" type="number" name="month" min="1" max="12" value="<%= dashboard.currentMonth %>" style="width: 120px;" />
+          <input class="form-control" type="number" name="year" min="2020" value="<%= dashboard.currentYear %>" style="width: 140px;" />
+          <button class="btn btn-light" type="submit">Actualizar</button>
+        </form>
+        <div class="hero-actions">
+          <a class="btn btn-outline-light" href="/reportes">Ir a reportes</a>
+          <a class="btn btn-outline-light" href="/rentabilidad">Ver rentabilidad</a>
+        </div>
+        <div class="hero-highlight">
+          <span class="eyebrow">Resultado del mes</span>
+          <strong class="<%= dashboard.resumen.resultadoMes >= 0 ? 'text-success' : 'text-danger' %>"><%= helpers.formatCurrency(dashboard.resumen.resultadoMes) %></strong>
+          <small>Ingresos: <%= helpers.formatCurrency(dashboard.resumen.ingresosMes) %> &middot; Gastos: <%= helpers.formatCurrency(dashboard.resumen.gastosMes) %></small>
+        </div>
+      </div>
     </section>
 
     <section class="kpi-grid">
@@ -37,6 +60,19 @@
         <span class="eyebrow">Obras activas</span>
         <strong><%= dashboard.resumen.obrasActivas %></strong>
         <small class="text-muted">Proyectos en curso</small>
+      </article>
+    </section>
+
+    <section class="content-grid dashboard-strip">
+      <article class="panel-card pulse-card">
+        <span class="eyebrow">Liquidez</span>
+        <h3><%= helpers.formatCurrency(dashboard.resumen.ingresosMes) %></h3>
+        <p>Ingresos cobrados en el mes actual.</p>
+      </article>
+      <article class="panel-card pulse-card">
+        <span class="eyebrow">Egresos</span>
+        <h3><%= helpers.formatCurrency(dashboard.resumen.gastosMes) %></h3>
+        <p>Compras y gastos registrados en el periodo.</p>
       </article>
     </section>
 
@@ -132,7 +168,7 @@
           <div class="timeline-item">
             <span class="status-dot"></span>
             <div>
-              <strong><%= item.modulo %> · <%= item.accion %></strong>
+              <strong><%= item.modulo %> &middot; <%= item.accion %></strong>
               <p><%= item.entidad || 'Registro' %> #<%= item.entidad_id || '-' %></p>
             </div>
             <span class="text-muted small"><%= helpers.formatDateReadable(item.created_at || item.createdAt) %></span>

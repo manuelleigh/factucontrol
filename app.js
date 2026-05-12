@@ -103,8 +103,16 @@ async function start() {
     await sequelize.authenticate();
     await runMigrations(sequelize);
     await ensureDefaultAdminUser();
-    app.listen(port, () => {
+    app.listen(port, async () => {
       console.log(`${APP_TITLE} ejecutandose en http://localhost:${port}`);
+      if (process.env.NODE_ENV !== 'production') {
+        try {
+          const open = (await import('open')).default;
+          await open(`http://localhost:${port}`);
+        } catch (error) {
+          console.warn('No se pudo abrir el navegador automaticamente:', error.message);
+        }
+      }
     });
   } catch (error) {
     console.error('No se pudo iniciar la aplicacion:', error.message);
