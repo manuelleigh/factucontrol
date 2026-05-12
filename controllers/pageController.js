@@ -351,10 +351,11 @@ const renderCotizaciones = asyncHandler(async (req, res) => {
 });
 
 async function renderRegistroPage(req, res, type) {
+  const categoriaTipo = type === 'compra' ? 'compra_bien' : 'gasto_operativo';
   const [proveedores, obras, categorias, cotizaciones, records] = await Promise.all([
     listProveedores({ pageSize: 500 }),
     listObras({ pageSize: 500 }),
-    listCategorias({ pageSize: 500 }),
+    listCategorias({ pageSize: 500, tipo: categoriaTipo, activo: '1' }),
     listCotizaciones({ pageSize: 500 }),
     type === 'compra' ? listCompras(req.query) : listGastos(req.query),
   ]);

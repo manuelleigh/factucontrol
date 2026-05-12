@@ -8,6 +8,7 @@ module.exports = (sequelize) =>
       proveedorId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false, field: 'proveedor_id' },
       obraId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false, field: 'obra_id' },
       categoriaId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false, field: 'categoria_id' },
+      categoriaNombre: { type: DataTypes.STRING(80), allowNull: false, field: 'categoria' },
       cotizacionId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: true, field: 'cotizacion_id' },
       numeroFactura: { type: DataTypes.STRING(60), allowNull: false, field: 'numero_factura' },
       fechaEmision: { type: DataTypes.DATEONLY, allowNull: false, field: 'fecha_emision' },
@@ -46,6 +47,7 @@ module.exports = (sequelize) =>
         defaultValue: 'Consumible',
         field: 'tipo_bien',
       },
+      fechaRegistro: { type: DataTypes.DATEONLY, allowNull: false, defaultValue: DataTypes.NOW, field: 'fecha_registro' },
     },
     { tableName: 'compras_bienes', timestamps: false }
   );

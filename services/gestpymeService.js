@@ -657,10 +657,16 @@ async function saveGasto(body, userId = null, id = null, file = null) {
   if (Object.keys(errors).length) throw createHttpError(400, 'Revisa los datos del gasto.', errors);
 
   const record = id ? await GastoOperativo.findByPk(id) : null;
+  const categoria = await Categoria.findByPk(Number(body.categoriaId));
+  if (!categoria) throw createHttpError(400, 'Revisa los datos del gasto.', { categoriaId: 'La categoria seleccionada no existe.' });
+  if (categoria.tipo !== 'gasto_operativo') {
+    throw createHttpError(400, 'Revisa los datos del gasto.', { categoriaId: 'La categoria debe ser de tipo gasto operativo.' });
+  }
   const payload = {
     proveedorId: Number(body.proveedorId),
     obraId: Number(body.obraId),
     categoriaId: Number(body.categoriaId),
+    categoriaNombre: categoria.nombre,
     numeroFactura: normalizeText(body.numeroFactura),
     fechaEmision: body.fechaEmision,
     fechaVencimiento: body.fechaVencimiento,
@@ -672,6 +678,7 @@ async function saveGasto(body, userId = null, id = null, file = null) {
     fechaPago: body.fechaPago || null,
     metodoPago: body.metodoPago || null,
     archivoAdjunto: file ? `/uploads/${file.filename}` : body.archivoAdjunto || (record ? record.archivoAdjunto : null),
+    fechaRegistro: body.fechaRegistro || dayjs().format('YYYY-MM-DD'),
   };
 
   const beforeData = record ? record.get({ plain: true }) : null;
@@ -751,10 +758,17 @@ async function saveCompra(body, userId = null, id = null, file = null) {
   const porcentajeImpuesto = validateDecimal(body.porcentajeImpuesto, 'porcentajeImpuesto', 'El IVA debe ser valido.', errors, 0);
   if (Object.keys(errors).length) throw createHttpError(400, 'Revisa los datos de la compra.', errors);
 
+  const record = id ? await CompraBien.findByPk(id) : null;
+  const categoria = await Categoria.findByPk(Number(body.categoriaId));
+  if (!categoria) throw createHttpError(400, 'Revisa los datos de la compra.', { categoriaId: 'La categoria seleccionada no existe.' });
+  if (categoria.tipo !== 'compra_bien') {
+    throw createHttpError(400, 'Revisa los datos de la compra.', { categoriaId: 'La categoria debe ser de tipo compra bien.' });
+  }
   const payload = {
     proveedorId: Number(body.proveedorId),
     obraId: Number(body.obraId),
     categoriaId: Number(body.categoriaId),
+    categoriaNombre: categoria.nombre,
     cotizacionId: body.cotizacionId ? Number(body.cotizacionId) : null,
     numeroFactura: normalizeText(body.numeroFactura),
     fechaEmision: body.fechaEmision,
@@ -771,9 +785,9 @@ async function saveCompra(body, userId = null, id = null, file = null) {
     cantidad: Number(body.cantidad || 1),
     estadoBien: body.estadoBien,
     tipoBien: body.tipoBien,
+    fechaRegistro: body.fechaRegistro || dayjs().format('YYYY-MM-DD'),
   };
 
-  const record = id ? await CompraBien.findByPk(id) : null;
   const beforeData = record ? record.get({ plain: true }) : null;
   const saved = record ? await record.update(payload) : await CompraBien.create(payload);
   await writeAudit({
