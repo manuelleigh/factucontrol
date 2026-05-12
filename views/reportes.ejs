@@ -1,34 +1,124 @@
 <%- include('partials/head') %>
+<%
+  const bestWork = rentabilidad[0];
+  const worstWork = rentabilidad.length ? rentabilidad[rentabilidad.length - 1] : null;
+  const monthlyBase = `/api/reportes/mensual?month=${currentMonth}&year=${currentYear}`;
+  const rentBase = '/api/reportes/rentabilidad';
+%>
 <div class="app-shell">
   <%- include('partials/nav') %>
   <main class="app-main">
-    <section class="hero-card">
+    <section class="hero-card hero-card-dashboard">
       <div>
-        <span class="eyebrow">Exportacion</span>
-        <h2>Reportes descargables</h2>
-        <p>Obtén los PDF, CSV o Excel del mes y la rentabilidad en un clic.</p>
+        <span class="eyebrow">Exportacion ejecutiva</span>
+        <h2>Central de reportes</h2>
+        <p>Genera reportes con contexto real del periodo, rentabilidad y alertas del negocio.</p>
       </div>
+      <div class="hero-actions-stacked">
+        <div class="hero-highlight">
+          <span class="eyebrow">Periodo actual</span>
+          <strong><%= currentMonth %>/<%= currentYear %></strong>
+          <small>Se usa como base para el reporte mensual.</small>
+        </div>
+        <div class="hero-actions">
+          <a class="btn btn-outline-light" href="/">Volver al dashboard</a>
+          <a class="btn btn-light" href="<%= monthlyBase %>&format=pdf">Descargar mes</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="kpi-grid">
+      <article class="kpi-card kpi-accent">
+        <span class="eyebrow">Resultado del mes</span>
+        <strong class="<%= dashboard.resumen.resultadoMes >= 0 ? 'text-success' : 'text-danger' %>"><%= helpers.formatCurrency(dashboard.resumen.resultadoMes) %></strong>
+        <small class="text-muted">Ingresos menos gastos del periodo</small>
+      </article>
+      <article class="kpi-card kpi-accent kpi-positive">
+        <span class="eyebrow">Ingresos</span>
+        <strong><%= helpers.formatCurrency(dashboard.resumen.ingresosMes) %></strong>
+        <small class="text-muted">Cobros efectivamente registrados</small>
+      </article>
+      <article class="kpi-card kpi-accent kpi-neutral">
+        <span class="eyebrow">Gastos</span>
+        <strong><%= helpers.formatCurrency(dashboard.resumen.gastosMes) %></strong>
+        <small class="text-muted">Compras y gastos del mismo mes</small>
+      </article>
+      <article class="kpi-card kpi-accent">
+        <span class="eyebrow">Alertas</span>
+        <strong><%= dashboard.resumen.alertasActivas %></strong>
+        <small class="text-muted">Vencidos y categorias en semaforo</small>
+      </article>
     </section>
 
     <section class="report-grid">
       <article class="report-card">
-        <h3>Reporte mensual</h3>
-        <p>Resumen operativo del mes seleccionado.</p>
-        <div class="d-flex gap-2 flex-wrap">
-          <a class="btn btn-primary" href="/api/reportes/mensual?format=pdf">PDF</a>
-          <a class="btn btn-outline-primary" href="/api/reportes/mensual?format=csv">CSV</a>
-          <a class="btn btn-outline-primary" href="/api/reportes/mensual?format=xlsx">Excel</a>
+        <span class="eyebrow">Reporte mensual</span>
+        <h3>Resumen operativo</h3>
+        <p>Incluye resultado, ingresos, gastos, cuentas por cobrar, cuentas por pagar, obras activas y alertas.</p>
+        <div class="d-flex gap-2 flex-wrap mb-3">
+          <a class="btn btn-primary" href="<%= monthlyBase %>&format=pdf">PDF</a>
+          <a class="btn btn-outline-primary" href="<%= monthlyBase %>&format=csv">CSV</a>
+          <a class="btn btn-outline-primary" href="<%= monthlyBase %>&format=xlsx">Excel</a>
+        </div>
+        <div class="row g-2">
+          <div class="col-md-6">
+            <label class="form-label">Mes</label>
+            <input class="form-control" type="number" min="1" max="12" value="<%= currentMonth %>" readonly />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Anio</label>
+            <input class="form-control" type="number" value="<%= currentYear %>" readonly />
+          </div>
         </div>
       </article>
+
       <article class="report-card">
-        <h3>Rentabilidad</h3>
-        <p>Margen por obra con cálculo financiero.</p>
-        <div class="d-flex gap-2 flex-wrap">
-          <a class="btn btn-primary" href="/api/reportes/rentabilidad?format=pdf">PDF</a>
-          <a class="btn btn-outline-primary" href="/api/reportes/rentabilidad?format=csv">CSV</a>
-          <a class="btn btn-outline-primary" href="/api/reportes/rentabilidad?format=xlsx">Excel</a>
+        <span class="eyebrow">Rentabilidad</span>
+        <h3>Margen por obra</h3>
+        <p>Exporta utilidad, margen y comparación financiera por proyecto.</p>
+        <div class="d-flex gap-2 flex-wrap mb-3">
+          <a class="btn btn-primary" href="<%= rentBase %>?format=pdf">PDF</a>
+          <a class="btn btn-outline-primary" href="<%= rentBase %>?format=csv">CSV</a>
+          <a class="btn btn-outline-primary" href="<%= rentBase %>?format=xlsx">Excel</a>
+        </div>
+        <div class="report-meta">
+          <div>
+            <strong><%= bestWork ? bestWork.nombre : 'Sin datos' %></strong>
+            <p>Mejor obra por margen: <%= bestWork ? `${Number(bestWork.margen || 0).toFixed(2)}%` : 'N/A' %></p>
+          </div>
+          <div>
+            <strong><%= worstWork ? worstWork.nombre : 'Sin datos' %></strong>
+            <p>Obra a revisar: <%= worstWork ? `${Number(worstWork.margen || 0).toFixed(2)}%` : 'N/A' %></p>
+          </div>
         </div>
       </article>
+    </section>
+
+    <section class="panel-card">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">Vista previa</span>
+          <h3>Lo que incluye cada exportacion</h3>
+        </div>
+      </div>
+      <div class="report-preview-grid">
+        <article class="report-preview-card">
+          <h4>PDF</h4>
+          <p>Ideal para presentar en sustentacion o reunion. Tiene lectura directa y formal.</p>
+        </article>
+        <article class="report-preview-card">
+          <h4>CSV</h4>
+          <p>Sirve para abrir rapido en Excel o importar a otras herramientas.</p>
+        </article>
+        <article class="report-preview-card">
+          <h4>Excel</h4>
+          <p>Formato editable para trabajar cifras, filtros y tablas dinamicas.</p>
+        </article>
+        <article class="report-preview-card">
+          <h4>Datos fuente</h4>
+          <p>Los reportes toman la informacion consolidada del dashboard y la rentabilidad.</p>
+        </article>
+      </div>
     </section>
   </main>
 </div>

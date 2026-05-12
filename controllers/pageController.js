@@ -431,7 +431,15 @@ const renderRentabilidad = asyncHandler(async (req, res) => {
 });
 
 const renderReportes = asyncHandler(async (req, res) => {
-  res.render('reportes', { title: 'Reportes' });
+  const dashboard = await getDashboardData(req.query);
+  const rentabilidad = await getRentabilidadData();
+  res.render('reportes', {
+    title: 'Reportes',
+    dashboard,
+    rentabilidad,
+    currentMonth: dashboard.currentMonth,
+    currentYear: dashboard.currentYear,
+  });
 });
 
 module.exports = {

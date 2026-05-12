@@ -233,6 +233,45 @@ a { text-decoration: none; }
   gap: 16px;
 }
 
+.report-meta {
+  display: grid;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.report-meta > div {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.report-meta strong,
+.report-preview-card h4 {
+  display: block;
+  margin-bottom: 4px;
+  color: #fff;
+}
+
+.report-meta p,
+.report-preview-card p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.report-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.report-preview-card {
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
 .dashboard-strip .pulse-card {
   position: relative;
   overflow: hidden;
