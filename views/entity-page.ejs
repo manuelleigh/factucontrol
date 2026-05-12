@@ -10,6 +10,9 @@
       </div>
       <div class="hero-actions">
         <button class="btn btn-light" type="button" data-bs-toggle="modal" data-bs-target="#entityModal">Nuevo registro</button>
+        <% if (assistantLink) { %>
+          <a class="btn btn-outline-light" href="<%= assistantLink %>">Preguntar a IA</a>
+        <% } %>
       </div>
     </section>
 
@@ -216,6 +219,6 @@
 </div>
 
 <script>
-  window.gestpymePage = <%- JSON.stringify({ endpoint, resource, extraButtons }) %>;
+  window.gestpymePage = <%- JSON.stringify({ endpoint, resource, extraButtons, assistantLink }) %>;
 </script>
 <%- include('partials/footer') %>

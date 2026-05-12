@@ -239,6 +239,7 @@ function renderAssistantPage() {
   const page = window.asistentePage;
   const form = document.getElementById('assistantForm');
   const log = document.getElementById('assistantLog');
+  const responsePanel = document.getElementById('assistantResponse');
   if (!page || !form || !log) return;
 
   const questionField = form.elements.question;
@@ -265,9 +266,55 @@ function renderAssistantPage() {
     },
   ];
 
+  if (questionField && page.initialQuestion) {
+    questionField.value = page.initialQuestion;
+  }
+
+  function escapeLocal(value) {
+    return escapeHtml(String(value ?? ''));
+  }
+
+  function renderStructuredResponse(sections, warning, recommendations, keyFindings) {
+    const actions = Array.isArray(sections?.acciones) ? sections.acciones : [];
+    return `
+      <div class="assistant-response-grid">
+        <article class="assistant-response-block">
+          <span class="eyebrow">Diagnóstico</span>
+          <p>${escapeLocal(sections?.diagnostico || 'Sin diagnóstico disponible.')}</p>
+        </article>
+        <article class="assistant-response-block">
+          <span class="eyebrow">Riesgo</span>
+          <p>${escapeLocal(sections?.riesgo || 'Sin riesgos detectados.')}</p>
+        </article>
+        <article class="assistant-response-block">
+          <span class="eyebrow">Acciones</span>
+          ${
+            actions.length
+              ? `<ol class="assistant-action-list">${actions.map((item) => `<li>${escapeLocal(item)}</li>`).join('')}</ol>`
+              : '<p>Sin acciones sugeridas.</p>'
+          }
+        </article>
+      </div>
+      ${
+        Array.isArray(recommendations) && recommendations.length
+          ? `<div class="assistant-chips">${recommendations.map((item) => `<span class="assistant-chip">${escapeLocal(item)}</span>`).join('')}</div>`
+          : ''
+      }
+      ${
+        Array.isArray(keyFindings) && keyFindings.length
+          ? `<div class="assistant-findings">${keyFindings.map((item) => `<span class="assistant-finding">${escapeLocal(item)}</span>`).join('')}</div>`
+          : ''
+      }
+      ${warning ? `<div class="assistant-warning">${escapeLocal(warning)}</div>` : ''}
+    `;
+  }
+
   function renderMessages() {
     if (!messages.length) {
       log.innerHTML = '<p class="empty-state">Aun no hay consultas registradas.</p>';
+      if (responsePanel) {
+        responsePanel.innerHTML = '<p class="empty-state">Las respuestas se mostrarán con diagnóstico, riesgo y acciones.</p>';
+      }
       return;
     }
 
@@ -299,6 +346,16 @@ function renderAssistantPage() {
       .join('');
 
     log.scrollTop = log.scrollHeight;
+
+    const lastAssistantMessage = [...messages].reverse().find((message) => message.role === 'assistant' && message.sections);
+    if (responsePanel && lastAssistantMessage) {
+      responsePanel.innerHTML = renderStructuredResponse(
+        lastAssistantMessage.sections,
+        lastAssistantMessage.warning,
+        lastAssistantMessage.recommendations,
+        lastAssistantMessage.keyFindings
+      );
+    }
   }
 
   promptButtons.forEach((button) => {
@@ -350,14 +407,15 @@ function renderAssistantPage() {
         body: payload,
       });
 
-      messages.push({
-        role: 'assistant',
-        meta: `${result.provider || assistantLabel}${result.model ? ` · ${result.model}` : ''}`,
-        text: result.answer || 'No se pudo generar una respuesta.',
-        recommendations: result.recommendations || [],
-        keyFindings: result.keyFindings || [],
-        warning: result.warning || null,
-      });
+    messages.push({
+      role: 'assistant',
+      meta: `${result.provider || assistantLabel}${result.model ? ` · ${result.model}` : ''}`,
+      text: result.answer || 'No se pudo generar una respuesta.',
+      sections: result.sections || null,
+      recommendations: result.recommendations || [],
+      keyFindings: result.keyFindings || [],
+      warning: result.warning || null,
+    });
       renderMessages();
       if (questionField) questionField.value = '';
       showToast(result.mode === 'groq' ? 'Respuesta generada por Groq.' : 'Respuesta generada en modo local.');

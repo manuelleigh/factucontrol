@@ -47,7 +47,7 @@
         <form id="assistantForm" class="assistant-form">
           <div class="mb-3">
             <label class="form-label">Pregunta</label>
-            <textarea class="form-control assistant-textarea" name="question" rows="4" placeholder="Ejemplo: resume el mes y dime qué debo atacar primero"></textarea>
+            <textarea class="form-control assistant-textarea" name="question" rows="4" placeholder="Ejemplo: resume el mes y dime qué debo atacar primero"><%= initialQuestion || '' %></textarea>
           </div>
 
           <div class="row g-3 mb-3">
@@ -64,7 +64,7 @@
               <input class="form-control" type="number" name="month" min="1" max="12" value="<%= snapshot.currentMonth %>" />
             </div>
             <div class="col-md-4">
-              <label class="form-label">Anio</label>
+              <label class="form-label">Año</label>
               <input class="form-control" type="number" name="year" min="2020" value="<%= snapshot.currentYear %>" />
             </div>
           </div>
@@ -123,6 +123,10 @@
             <li>Usa el asistente para convertir alertas en acciones concretas.</li>
           </ul>
         </div>
+
+        <div class="assistant-response" id="assistantResponse">
+          <p class="empty-state">Las respuestas se mostrarán con diagnóstico, riesgo y acciones.</p>
+        </div>
       </aside>
     </section>
   </main>
@@ -132,6 +136,8 @@
   window.asistentePage = <%- JSON.stringify({
     endpoint: '/api/asistente/consultar',
     assistant,
+    initialQuestion,
+    initialScope: currentScope,
     snapshot: {
       currentMonth: snapshot.currentMonth,
       currentYear: snapshot.currentYear,

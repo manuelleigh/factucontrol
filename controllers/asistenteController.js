@@ -9,6 +9,7 @@ const renderAsistente = asyncHandler(async (req, res) => {
     snapshot,
     scopes: Object.entries(SCOPE_LABELS).map(([value, label]) => ({ value, label })),
     currentScope: normalizeScope(req.query.scope),
+    initialQuestion: req.query.question || '',
   });
 });
 

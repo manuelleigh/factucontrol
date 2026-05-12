@@ -1,4 +1,3 @@
-const dayjs = require('dayjs');
 const { createHttpError } = require('../utils/httpError');
 const { formatCurrency, toNumber } = require('../utils/helpers');
 const { getDashboardData, getRentabilidadData } = require('./gestpymeService');
@@ -18,6 +17,7 @@ const MONTHS_ES = [
   'noviembre',
   'diciembre',
 ];
+
 const SCOPE_LABELS = {
   general: 'Lectura general',
   riesgos: 'Riesgos y alertas',
@@ -66,12 +66,111 @@ function summarizeRentability(rentabilidad) {
     ? ordered.reduce((sum, item) => sum + toNumber(item.margen), 0) / ordered.length
     : 0;
 
+  return { best, worst, profitableCount, averageMargin };
+}
+
+function buildStructuredResponse({
+  question,
+  scopeLabel,
+  periodLabel,
+  dashboard,
+  summary,
+  topAlerts,
+  mode,
+  provider,
+  model,
+  warning = null,
+}) {
+  const diagnosticLines = [];
+  const riskLines = [];
+  const actionLines = [];
+
+  diagnosticLines.push(`Periodo analizado: ${periodLabel}.`);
+  diagnosticLines.push(`Resultado del mes: ${formatCurrency(dashboard.resumen.resultadoMes)}.`);
+  diagnosticLines.push(`Obras activas: ${dashboard.resumen.obrasActivas}, alertas activas: ${dashboard.resumen.alertasActivas}.`);
+
+  if (summary.best) {
+    diagnosticLines.push(`Mejor obra: ${summary.best.nombre} con margen de ${Number(summary.best.margen || 0).toFixed(1)}%.`);
+  }
+  if (summary.worst) {
+    diagnosticLines.push(`Obra a revisar: ${summary.worst.nombre} con margen de ${Number(summary.worst.margen || 0).toFixed(1)}%.`);
+  }
+
+  if (dashboard.resumen.resultadoMes < 0) {
+    riskLines.push('El negocio cerró el mes en negativo, por lo que conviene revisar egresos no críticos.');
+  } else {
+    riskLines.push('El cierre del mes es positivo, pero sigue siendo importante cuidar el flujo de caja.');
+  }
+
+  if (dashboard.resumen.cuentasPorCobrar > dashboard.resumen.cuentasPorPagar) {
+    riskLines.push('Hay más dinero por cobrar que por pagar, lo que puede presionar la liquidez si la cobranza se demora.');
+  } else {
+    riskLines.push('La carga de pagos es manejable, pero la caja necesita seguimiento si aparecen nuevos gastos.');
+  }
+
+  if (topAlerts.length) {
+    riskLines.push(`Alertas prioritarias: ${topAlerts.slice(0, 3).join('; ')}.`);
+  }
+
+  actionLines.push('Prioriza la cobranza de vencidos y el seguimiento de alertas críticas.');
+  actionLines.push('Revisa la obra con menor margen y ajusta su estructura de costos.');
+  actionLines.push('Usa los reportes mensuales para tomar decisiones semanales sobre caja y presupuesto.');
+
   return {
-    best,
-    worst,
-    profitableCount,
-    averageMargin,
+    mode,
+    provider,
+    model,
+    question,
+    answer: [
+      'Diagnóstico',
+      diagnosticLines.map((line) => `- ${line}`).join('\n'),
+      'Riesgo',
+      riskLines.map((line) => `- ${line}`).join('\n'),
+      'Acciones',
+      actionLines.map((line, index) => `${index + 1}. ${line}`).join('\n'),
+    ].join('\n\n'),
+    sections: {
+      diagnostico: diagnosticLines.join(' '),
+      riesgo: riskLines.join(' '),
+      acciones: actionLines,
+    },
+    recommendations: actionLines,
+    keyFindings: [
+      `Resultado mensual: ${formatCurrency(dashboard.resumen.resultadoMes)}`,
+      `Alertas activas: ${dashboard.resumen.alertasActivas}`,
+      `Obras activas: ${dashboard.resumen.obrasActivas}`,
+    ],
+    context: {
+      periodLabel,
+      resultMonth: dashboard.resumen.resultadoMes,
+      alertasActivas: dashboard.resumen.alertasActivas,
+      mejorObra: summary.best ? summary.best.nombre : null,
+      peorObra: summary.worst ? summary.worst.nombre : null,
+      scopeLabel,
+    },
+    warning,
   };
+}
+
+function parseAssistantSections(answer) {
+  const text = normalizeText(answer);
+  if (!text) return null;
+
+  const diagnosticoMatch = text.match(/diagn[oó]stico\s*:?\s*([\s\S]*?)(?=\n\s*riesgo\s*:|\n\s*acciones\s*:|$)/i);
+  const riesgoMatch = text.match(/riesgo\s*:?\s*([\s\S]*?)(?=\n\s*acciones\s*:|$)/i);
+  const accionesMatch = text.match(/acciones\s*:?\s*([\s\S]*)/i);
+
+  const diagnostico = diagnosticoMatch ? diagnosticoMatch[1].replace(/\n+/g, ' ').trim() : '';
+  const riesgo = riesgoMatch ? riesgoMatch[1].replace(/\n+/g, ' ').trim() : '';
+  const acciones = accionesMatch
+    ? accionesMatch[1]
+        .split(/\n+/)
+        .map((line) => line.replace(/^\s*(?:[-*]|\d+[.)])\s*/, '').trim())
+        .filter(Boolean)
+    : [];
+
+  if (!diagnostico && !riesgo && !acciones.length) return null;
+  return { diagnostico, riesgo, acciones };
 }
 
 async function buildAssistantSnapshot(query = {}) {
@@ -133,65 +232,24 @@ async function buildAssistantSnapshot(query = {}) {
 
 function buildLocalInsights(snapshot, scopeLabel, question) {
   const { dashboard, summary, topAlerts, periodLabel } = snapshot;
-  const lines = [];
-  const recommendations = [];
+  const build = buildStructuredResponse({
+    question,
+    scopeLabel,
+    periodLabel,
+    dashboard,
+    summary,
+    topAlerts,
+    mode: 'local',
+    provider: 'Reglas locales',
+    model: 'gestpyme-local',
+  });
 
-  lines.push(`Lectura para ${periodLabel} con foco en ${scopeLabel.toLowerCase()}.`);
-
-  if (dashboard.resumen.resultadoMes >= 0) {
-    lines.push(`El mes cierra con un resultado positivo de ${formatCurrency(dashboard.resumen.resultadoMes)}.`);
-  } else {
-    lines.push(`El mes cierra en negativo por ${formatCurrency(Math.abs(dashboard.resumen.resultadoMes))}.`);
-    recommendations.push('Reducir egresos no criticos y priorizar pagos que no afecten la operacion.');
+  if (dashboard.resumen.resultadoMes < 0) {
+    build.warning = 'El resultado del mes está en negativo y merece revisión.';
   }
 
-  lines.push(`Hay ${dashboard.resumen.alertasActivas} alertas activas, ${dashboard.resumen.obrasActivas} obras activas y ${formatCurrency(dashboard.resumen.cuentasPorCobrar)} por cobrar.`);
-
-  if (summary.best) {
-    lines.push(`La obra mas rentable es ${summary.best.nombre} con margen de ${Number(summary.best.margen || 0).toFixed(1)}%.`);
-  }
-
-  if (summary.worst) {
-    lines.push(`La obra mas debil es ${summary.worst.nombre} con margen de ${Number(summary.worst.margen || 0).toFixed(1)}%.`);
-    recommendations.push(`Revisar la estructura de costos de ${summary.worst.nombre} antes de seguir ampliando alcance.`);
-  }
-
-  if (topAlerts.length) {
-    lines.push(`Alertas prioritarias: ${topAlerts.slice(0, 3).join('; ')}.`);
-    recommendations.push('Atender primero cobros vencidos y categorias con semaforo rojo o amarillo.');
-  }
-
-  if (dashboard.resumen.cuentasPorCobrar > dashboard.resumen.cuentasPorPagar) {
-    recommendations.push('Hay mas dinero por cobrar que por pagar, asi que conviene acelerar cobranza.');
-  } else {
-    recommendations.push('Conviene equilibrar pagos y cobranzas para evitar tension de caja.');
-  }
-
-  if (!recommendations.length) {
-    recommendations.push('Mantener seguimiento semanal del flujo de caja y de las obras con mayor costo.');
-  }
-
-    return {
-      mode: 'local',
-      provider: 'Reglas locales',
-      model: 'gestpyme-local',
-      question,
-      answer: lines.join('\n\n'),
-      recommendations: [...new Set(recommendations)].slice(0, 5),
-      keyFindings: [
-        `Resultado mensual: ${formatCurrency(dashboard.resumen.resultadoMes)}`,
-        `Alertas activas: ${dashboard.resumen.alertasActivas}`,
-        `Obras activas: ${dashboard.resumen.obrasActivas}`,
-      ],
-      context: {
-        periodLabel: snapshot.periodLabel,
-        resultMonth: dashboard.resumen.resultadoMes,
-        alertasActivas: dashboard.resumen.alertasActivas,
-        mejorObra: summary.best ? summary.best.nombre : null,
-        peorObra: summary.worst ? summary.worst.nombre : null,
-      },
-    };
-  }
+  return build;
+}
 
 function buildGroqPrompt(snapshot, scopeLabel, question) {
   const { dashboard, summary, topAlerts, topCategories, periodLabel } = snapshot;
@@ -236,7 +294,8 @@ function buildGroqPrompt(snapshot, scopeLabel, question) {
     '- Se breve, claro y ejecutivo.',
     '- No inventes datos que no esten en el contexto.',
     '- Si falta informacion, dilo y explica que dato seria necesario.',
-    '- Cierra con 3 acciones concretas y priorizadas.',
+    '- Usa exactamente estos bloques en este orden: Diagnóstico, Riesgo, Acciones.',
+    '- En Acciones escribe exactamente 3 pasos numerados.',
   ].join('\n');
 }
 
@@ -258,7 +317,6 @@ async function askAssistant({ question, scope, month, year }) {
     return {
       ...localFallback,
       config,
-      snapshot,
     };
   }
 
@@ -303,6 +361,7 @@ async function askAssistant({ question, scope, month, year }) {
       model: config.model,
       question: normalizedQuestion,
       answer,
+      sections: localFallback.sections,
       recommendations: localFallback.recommendations,
       keyFindings: localFallback.keyFindings,
       config,
@@ -323,5 +382,6 @@ module.exports = {
   buildAssistantSnapshot,
   getAssistantConfig,
   normalizeScope,
+  parseAssistantSections,
   SCOPE_LABELS,
 };

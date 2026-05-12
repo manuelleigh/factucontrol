@@ -41,7 +41,12 @@ function buildCrudPage({
   filters = [],
   query = {},
   pageSizeOptions = [10, 20, 50],
+  assistantScope = 'general',
+  assistantPrompt = '',
 }) {
+  const prompt =
+    assistantPrompt ||
+    `Analiza el modulo de ${title.toLowerCase()} y respondeme con diagnostico, riesgos y acciones concretas.`;
   return {
     title,
     description,
@@ -58,6 +63,7 @@ function buildCrudPage({
     sort: query.sort || '',
     dir: query.dir || 'asc',
     pageSizeOptions,
+    assistantLink: `/asistente?scope=${encodeURIComponent(assistantScope)}&question=${encodeURIComponent(prompt)}`,
   };
 }
 
@@ -66,7 +72,11 @@ const renderDashboard = asyncHandler(async (req, res) => {
   if (dashboard.alertas.length && req.user?.email) {
     sendOverdueNotificationSummary(req.user.email).catch(() => {});
   }
-  res.render('dashboard', { title: 'Dashboard', dashboard });
+  res.render('dashboard', {
+    title: 'Dashboard',
+    dashboard,
+    assistantLink: `/asistente?scope=general&question=${encodeURIComponent('Resume el estado general del negocio con diagnostico, riesgos y acciones.')}`,
+  });
 });
 
 const renderProveedores = asyncHandler(async (req, res) => {
@@ -81,6 +91,8 @@ const renderProveedores = asyncHandler(async (req, res) => {
       items,
       pagination,
       query: req.query,
+      assistantScope: 'general',
+      assistantPrompt: 'Analiza el estado de los proveedores, detecta riesgos de concentracion y sugiere acciones.',
       filters: [
         { name: 'activo', label: 'Estado', type: 'select', options: ['', '1', '0'], labels: ['Todos', 'Activos', 'Inactivos'] },
       ],
@@ -116,6 +128,8 @@ const renderClientes = asyncHandler(async (req, res) => {
       items,
       pagination,
       query: req.query,
+      assistantScope: 'general',
+      assistantPrompt: 'Analiza la cartera de clientes y sus riesgos operativos o comerciales.',
       filters: [
         { name: 'activo', label: 'Estado', type: 'select', options: ['', '1', '0'], labels: ['Todos', 'Activos', 'Inactivos'] },
       ],
@@ -151,6 +165,8 @@ const renderObras = asyncHandler(async (req, res) => {
       items,
       pagination,
       query: req.query,
+      assistantScope: 'general',
+      assistantPrompt: 'Analiza el estado de las obras, su presupuesto y posibles riesgos de ejecucion.',
       filters: [
         { name: 'estado', label: 'Estado', type: 'select', options: ['', ...OBRA_ESTADOS], labels: ['Todos', ...OBRA_ESTADOS] },
         { name: 'clienteId', label: 'Cliente', type: 'select', options: ['', ...clientes.items.map((item) => String(item.id))], labels: ['Todos', ...clientes.items.map((item) => item.razonSocial)] },
@@ -190,6 +206,8 @@ const renderCategorias = asyncHandler(async (req, res) => {
       items,
       pagination,
       query: req.query,
+      assistantScope: 'general',
+      assistantPrompt: 'Analiza las categorias, su semaforo y los presupuestos que requieren atencion.',
       filters: [
         { name: 'tipo', label: 'Tipo', type: 'select', options: ['', ...CATEGORIA_TIPOS], labels: ['Todos', ...CATEGORIA_TIPOS] },
         { name: 'mes', label: 'Mes', type: 'number' },
@@ -227,6 +245,8 @@ const renderCobros = asyncHandler(async (req, res) => {
       items,
       pagination,
       query: req.query,
+      assistantScope: 'cobros',
+      assistantPrompt: 'Analiza los cobros pendientes, vencidos y la presion de caja que generan.',
       filters: [
         { name: 'estado', label: 'Estado', type: 'select', options: ['', 'Cobrado', 'Pendiente', 'Vencido'], labels: ['Todos', 'Cobrado', 'Pendiente', 'Vencido'] },
         { name: 'obraId', label: 'Obra', type: 'select', options: ['', ...obras.items.map((item) => String(item.id))], labels: ['Todas', ...obras.items.map((item) => item.nombre)] },
@@ -271,6 +291,8 @@ const renderPresupuestos = asyncHandler(async (req, res) => {
       items,
       pagination,
       query: req.query,
+      assistantScope: 'general',
+      assistantPrompt: 'Analiza los presupuestos y dime cuales tienen mejor oportunidad o mayor riesgo.',
       filters: [
         { name: 'estado', label: 'Estado', type: 'select', options: ['', ...PRESUPUESTO_ESTADOS], labels: ['Todos', ...PRESUPUESTO_ESTADOS] },
         { name: 'clienteId', label: 'Cliente', type: 'select', options: ['', ...clientes.items.map((item) => String(item.id))], labels: ['Todos', ...clientes.items.map((item) => item.razonSocial)] },
@@ -321,6 +343,8 @@ const renderCotizaciones = asyncHandler(async (req, res) => {
       items,
       pagination,
       query: req.query,
+      assistantScope: 'general',
+      assistantPrompt: 'Analiza las cotizaciones y resume oportunidades, riesgos y siguientes pasos.',
       filters: [
         { name: 'estado', label: 'Estado', type: 'select', options: ['', ...COTIZACION_ESTADOS], labels: ['Todos', ...COTIZACION_ESTADOS] },
         { name: 'proveedorId', label: 'Proveedor', type: 'select', options: ['', ...proveedores.items.map((item) => String(item.id))], labels: ['Todos', ...proveedores.items.map((item) => item.nombre)] },
@@ -369,6 +393,11 @@ async function renderRegistroPage(req, res, type) {
       pagination: records.pagination,
       query: req.query,
       pageSizeOptions: [10, 20, 50, 100],
+      assistantScope: 'gastos',
+      assistantPrompt:
+        type === 'compra'
+          ? 'Analiza las compras registradas, detecta sobrecostos y dime que compras revisar primero.'
+          : 'Analiza los gastos operativos, detecta fugas de caja y acciones para controlar egresos.',
       filters: [
         { name: 'estado', label: 'Estado', type: 'select', options: ['', 'Pendiente', 'Pagada', 'Vencida'], labels: ['Todos', 'Pendiente', 'Pagada', 'Vencida'] },
         { name: 'proveedorId', label: 'Proveedor', type: 'select', options: ['', ...proveedores.items.map((item) => String(item.id))], labels: ['Todos', ...proveedores.items.map((item) => item.nombre)] },
@@ -428,7 +457,11 @@ const renderCompras = asyncHandler(async (req, res) => {
 
 const renderRentabilidad = asyncHandler(async (req, res) => {
   const rentabilidad = await getRentabilidadData();
-  res.render('rentabilidad', { title: 'Rentabilidad', rentabilidad });
+  res.render('rentabilidad', {
+    title: 'Rentabilidad',
+    rentabilidad,
+    assistantLink: `/asistente?scope=rentabilidad&question=${encodeURIComponent('Analiza la rentabilidad por obra, detecta el mejor y peor rendimiento, y dame acciones concretas.')}`,
+  });
 });
 
 const renderReportes = asyncHandler(async (req, res) => {
@@ -440,6 +473,7 @@ const renderReportes = asyncHandler(async (req, res) => {
     rentabilidad,
     currentMonth: dashboard.currentMonth,
     currentYear: dashboard.currentYear,
+    assistantLink: `/asistente?scope=reportes&question=${encodeURIComponent('Interpreta los reportes del periodo y resumeme diagnostico, riesgos y acciones.')}`,
   });
 });
 
