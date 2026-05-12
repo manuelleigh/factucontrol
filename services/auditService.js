@@ -9,15 +9,19 @@ async function writeAudit({
   beforeData = null,
   afterData = null,
 }) {
-  await AuditLog.create({
-    userId,
-    modulo,
-    accion,
-    entidad,
-    entidadId,
-    beforeData: beforeData ? JSON.stringify(beforeData) : null,
-    afterData: afterData ? JSON.stringify(afterData) : null,
-  });
+  try {
+    await AuditLog.create({
+      userId,
+      modulo,
+      accion,
+      entidad,
+      entidadId,
+      beforeData: beforeData ? JSON.stringify(beforeData) : null,
+      afterData: afterData ? JSON.stringify(afterData) : null,
+    });
+  } catch (error) {
+    console.warn('No se pudo registrar la auditoria:', error.message);
+  }
 }
 
 module.exports = { writeAudit };

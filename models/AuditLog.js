@@ -12,6 +12,7 @@ module.exports = (sequelize) =>
       entidadId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: true, field: 'entidad_id' },
       beforeData: { type: DataTypes.TEXT, allowNull: true, field: 'before_data' },
       afterData: { type: DataTypes.TEXT, allowNull: true, field: 'after_data' },
+      createdAt: { type: DataTypes.DATE, allowNull: false, field: 'created_at', defaultValue: DataTypes.NOW },
     },
     { tableName: 'audit_logs', timestamps: false }
   );
