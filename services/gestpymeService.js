@@ -142,6 +142,7 @@ async function saveProveedor(body, userId = null, id = null) {
     telefono: normalizeText(body.telefono),
     correo: normalizeText(body.correo),
     activo: body.activo === undefined ? true : body.activo !== 'false',
+    fechaRegistro: body.fechaRegistro || dayjs().format('YYYY-MM-DD'),
   };
 
   const record = id ? await Proveedor.findByPk(id) : null;
@@ -439,7 +440,7 @@ async function saveCobro(body, userId = null, id = null, file = null) {
 async function listPresupuestos(query = {}) {
   const presupuestos = await Presupuesto.findAll({ include: [{ model: Cliente, as: 'cliente' }, { model: Obra, as: 'obra' }], order: [['id', 'DESC']] });
   const items = presupuestos.map((item) => item.get({ plain: true }));
-  const sorted = applySort(items, query, ['nombre', 'cliente.razonSocial', 'montoEstimado', 'estado', 'fechaSolicitud']);
+  const sorted = applySort(items, query, ['nombre', 'cliente.razonSocial', 'obra.nombre', 'montoEstimado', 'estado', 'fechaSolicitud']);
   return applyFilteredPagination(sorted, query, (item) => {
     if (query.estado && item.estado !== query.estado) return false;
     if (query.clienteId && Number(query.clienteId) !== Number(item.clienteId)) return false;

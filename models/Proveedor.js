@@ -16,6 +16,7 @@ module.exports = (sequelize) =>
       telefono: { type: DataTypes.STRING(30), allowNull: true },
       correo: { type: DataTypes.STRING(120), allowNull: true, field: 'correo' },
       activo: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+      fechaRegistro: { type: DataTypes.DATEONLY, allowNull: false, defaultValue: DataTypes.NOW, field: 'fecha_registro' },
     },
     { tableName: 'proveedores', timestamps: false }
   );

@@ -256,7 +256,11 @@ const renderCobros = asyncHandler(async (req, res) => {
 });
 
 const renderPresupuestos = asyncHandler(async (req, res) => {
-  const [clientes, { items, pagination }] = await Promise.all([listClientes({ pageSize: 500 }), listPresupuestos(req.query)]);
+  const [clientes, obras, { items, pagination }] = await Promise.all([
+    listClientes({ pageSize: 500 }),
+    listObras({ pageSize: 500 }),
+    listPresupuestos(req.query),
+  ]);
   renderEntityPage(
     res,
     buildCrudPage({
@@ -279,11 +283,17 @@ const renderPresupuestos = asyncHandler(async (req, res) => {
         { name: 'montoEstimado', label: 'Monto estimado', type: 'number', step: '0.01', required: true },
         { name: 'fechaSolicitud', label: 'Fecha solicitud', type: 'date', required: true },
         { name: 'estado', label: 'Estado', type: 'select', options: PRESUPUESTO_ESTADOS },
-        { name: 'obraId', label: 'Obra vinculada', type: 'number' },
+        {
+          name: 'obraId',
+          label: 'Obra vinculada',
+          type: 'select',
+          options: [{ value: '', label: 'Sin obra' }, ...obras.items.map((item) => ({ value: item.id, label: item.nombre }))],
+        },
       ],
       columns: [
         { label: 'Nombre', key: 'nombre' },
         { label: 'Cliente', key: 'cliente.razonSocial' },
+        { label: 'Obra vinculada', key: 'obra.nombre' },
         { label: 'Monto', key: 'montoEstimado', format: 'currency' },
         { label: 'Estado', key: 'estado' },
       ],
