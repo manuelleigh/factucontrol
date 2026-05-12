@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const dotenv = require('dotenv');
 const session = require('express-session');
-const SequelizeStoreFactory = require('connect-session-sequelize');
+const SQLiteStoreFactory = require('connect-sqlite3');
 
 dotenv.config({ quiet: true });
 
@@ -10,34 +10,38 @@ const { sequelize } = require('./models');
 const { runMigrations } = require('./database/migrate');
 const { ensureDefaultAdminUser } = require('./services/userService');
 const authRoutes = require('./routes/auth');
-const iaRoutes = require('./routes/ia');
 const pageRoutes = require('./routes/pages');
 const proveedorRoutes = require('./routes/proveedores');
+const clienteRoutes = require('./routes/clientes');
+const obraRoutes = require('./routes/obras');
 const gastoRoutes = require('./routes/gastos');
 const compraRoutes = require('./routes/compras');
+const cobroRoutes = require('./routes/cobros');
+const categoriaRoutes = require('./routes/categorias');
+const presupuestoRoutes = require('./routes/presupuestos');
+const cotizacionRoutes = require('./routes/cotizaciones');
 const reporteRoutes = require('./routes/reportes');
-const { hydrateCurrentUser, requireAuth } = require('./middleware/auth');
+const apiController = require('./controllers/apiController');
+const { requireAuth } = require('./middleware/auth');
+const { hydrateCurrentUser } = require('./middleware/auth');
 const { notFoundHandler, errorHandler } = require('./middleware/errorHandler');
 const { ensureUploadDir } = require('./middleware/upload');
 const { APP_TITLE } = require('./utils/constants');
 const helpers = require('./utils/helpers');
 
-const SequelizeStore = SequelizeStoreFactory(session.Store);
+const SQLiteStore = SQLiteStoreFactory(session);
 const app = express();
 const port = Number(process.env.PORT || 3000);
 const uploadDir = path.resolve(process.cwd(), process.env.UPLOAD_DIR || 'uploads');
 const envWarnings = [];
 
-if (!process.env.DB_NAME) envWarnings.push('DB_NAME');
-if (!process.env.DB_USER) envWarnings.push('DB_USER');
 if (!process.env.SESSION_SECRET) envWarnings.push('SESSION_SECRET');
 
 ensureUploadDir(uploadDir);
 
-const sessionStore = new SequelizeStore({
-  db: sequelize,
-  tableName: 'Sessions',
-  disableTouch: true,
+const sessionStore = new SQLiteStore({
+  db: process.env.SESSION_DB || 'sessions.sqlite',
+  dir: path.resolve(process.cwd(), 'database'),
 });
 
 app.set('view engine', 'ejs');
@@ -49,7 +53,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || 'factucontrol-dev-secret',
+    secret: process.env.SESSION_SECRET || 'gestpyme-dev-secret',
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
@@ -57,7 +61,7 @@ app.use(
       httpOnly: true,
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 1000 * 60 * 60 * 8,
+      maxAge: Number(process.env.SESSION_MAX_AGE || 7200000),
     },
   })
 );
@@ -73,13 +77,20 @@ app.use((req, res, next) => {
 });
 
 app.use(authRoutes);
-app.use('/uploads', requireAuth, express.static(uploadDir));
+app.use('/uploads', express.static(uploadDir));
 app.use('/', pageRoutes);
-app.use('/api/ia', iaRoutes);
 app.use('/api/proveedores', proveedorRoutes);
+app.use('/api/clientes', clienteRoutes);
+app.use('/api/obras', obraRoutes);
 app.use('/api/gastos', gastoRoutes);
 app.use('/api/compras', compraRoutes);
+app.use('/api/cobros', cobroRoutes);
+app.use('/api/categorias', categoriaRoutes);
+app.use('/api/presupuestos', presupuestoRoutes);
+app.use('/api/cotizaciones', cotizacionRoutes);
 app.use('/api/reportes', reporteRoutes);
+app.get('/api/dashboard', requireAuth, apiController.dashboard);
+app.get('/api/rentabilidad', requireAuth, apiController.rentabilidad);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
@@ -93,10 +104,10 @@ async function start() {
     await runMigrations(sequelize);
     await ensureDefaultAdminUser();
     app.listen(port, () => {
-      console.log(`${APP_TITLE} ejecutándose en http://localhost:${port}`);
+      console.log(`${APP_TITLE} ejecutandose en http://localhost:${port}`);
     });
   } catch (error) {
-    console.error('No se pudo iniciar la aplicación:', error.message);
+    console.error('No se pudo iniciar la aplicacion:', error.message);
     process.exit(1);
   }
 }

@@ -1,0 +1,149 @@
+<%- include('partials/head') %>
+<div class="app-shell">
+  <%- include('partials/nav') %>
+  <main class="app-main">
+    <section class="hero-card hero-card-dashboard">
+      <div>
+        <span class="eyebrow">Resumen general</span>
+        <h2>Dashboard GestPyme</h2>
+        <p>Monitorea obras, cobros, gastos y rentabilidad con una lectura visual mas clara.</p>
+      </div>
+      <form class="hero-actions" method="get">
+        <input class="form-control" type="number" name="month" min="1" max="12" value="<%= dashboard.currentMonth %>" style="width: 120px;" />
+        <input class="form-control" type="number" name="year" min="2020" value="<%= dashboard.currentYear %>" style="width: 140px;" />
+        <button class="btn btn-light" type="submit">Actualizar</button>
+        <a class="btn btn-outline-light" href="/reportes">Ir a reportes</a>
+        <a class="btn btn-outline-light" href="/rentabilidad">Ver rentabilidad</a>
+      </form>
+    </section>
+
+    <section class="kpi-grid">
+      <article class="kpi-card">
+        <span class="eyebrow">Resultado del mes</span>
+        <strong><%= helpers.formatCurrency(dashboard.resumen.resultadoMes) %></strong>
+        <small class="<%= dashboard.resumen.resultadoMes >= 0 ? 'text-success' : 'text-danger' %>">Ingresos menos gastos</small>
+      </article>
+      <article class="kpi-card">
+        <span class="eyebrow">Cuentas por cobrar</span>
+        <strong><%= helpers.formatCurrency(dashboard.resumen.cuentasPorCobrar) %></strong>
+        <small class="text-muted">Facturas de cobro pendientes</small>
+      </article>
+      <article class="kpi-card">
+        <span class="eyebrow">Cuentas por pagar</span>
+        <strong><%= helpers.formatCurrency(dashboard.resumen.cuentasPorPagar) %></strong>
+        <small class="text-muted">Compras y gastos por pagar</small>
+      </article>
+      <article class="kpi-card">
+        <span class="eyebrow">Obras activas</span>
+        <strong><%= dashboard.resumen.obrasActivas %></strong>
+        <small class="text-muted">Proyectos en curso</small>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="panel-card">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">Semaforo por categoria</span>
+            <h3>Presupuesto mensual</h3>
+          </div>
+        </div>
+        <div class="progress-list">
+          <% dashboard.categoriasSemaforo.forEach((item) => { %>
+            <div>
+              <div class="d-flex justify-content-between mb-2">
+                <strong><%= item.nombre %></strong>
+                <span class="status-pill <%= item.color %>"><%= item.porcentaje.toFixed(0) %>%</span>
+              </div>
+              <div class="progress">
+                <div class="progress-bar bg-<%= item.color %>" style="width: <%= Math.min(item.porcentaje, 100) %>%"></div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </article>
+
+      <article class="panel-card">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">Alertas</span>
+            <h3>Atencion inmediata</h3>
+          </div>
+        </div>
+        <div class="timeline-list">
+          <% if (dashboard.alertas.length) { %>
+            <% dashboard.alertas.slice(0, 8).forEach((item) => { %>
+              <div class="timeline-item">
+                <span class="status-dot danger"></span>
+                <div>
+                  <strong><%= item %></strong>
+                  <p>Requiere seguimiento operativo.</p>
+                </div>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <p class="empty-state">No hay alertas activas.</p>
+          <% } %>
+        </div>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="panel-card">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">Ingresos vs gastos</span>
+            <h3>Ultimos 6 meses</h3>
+          </div>
+        </div>
+        <canvas id="chartIncomeExpenses" height="220"></canvas>
+      </article>
+
+      <article class="panel-card">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">Gasto por categoria</span>
+            <h3>Mes actual</h3>
+          </div>
+        </div>
+        <canvas id="chartCategorySpend" height="220"></canvas>
+      </article>
+    </section>
+
+    <section class="panel-card">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">Costo por obra</span>
+          <h3>Ejecucion presupuestal</h3>
+        </div>
+      </div>
+      <canvas id="chartWorks" height="140"></canvas>
+    </section>
+
+    <section class="panel-card">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">Actividad reciente</span>
+          <h3>Auditoria del sistema</h3>
+        </div>
+      </div>
+      <div class="timeline-list">
+        <% dashboard.actividadReciente.forEach((item) => { %>
+          <div class="timeline-item">
+            <span class="status-dot"></span>
+            <div>
+              <strong><%= item.modulo %> · <%= item.accion %></strong>
+              <p><%= item.entidad || 'Registro' %> #<%= item.entidad_id || '-' %></p>
+            </div>
+            <span class="text-muted small"><%= helpers.formatDateReadable(item.created_at || item.createdAt) %></span>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+  window.dashboardData = <%- JSON.stringify(dashboard) %>;
+</script>
+<%- include('partials/footer') %>

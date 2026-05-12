@@ -7,7 +7,7 @@ function isApiRequest(req) {
 
 async function hydrateCurrentUser(req, res, next) {
   try {
-    const userId = req.session?.userId;
+    const userId = req.session?.usuarioId || req.session?.userId;
     if (!userId) {
       req.user = null;
       res.locals.currentUser = null;
@@ -36,7 +36,11 @@ async function hydrateCurrentUser(req, res, next) {
 function requireAuth(req, res, next) {
   if (req.user) return next();
   if (isApiRequest(req)) {
-    return res.status(401).json({ error: 'Debes iniciar sesion para continuar.', details: null });
+    return res.status(401).json({
+      error: 'Debes iniciar sesion para continuar.',
+      details: null,
+      redirectTo: '/login',
+    });
   }
   return res.redirect('/login');
 }

@@ -1,7 +1,7 @@
 {
-  "name": "factucontrol",
+  "name": "gestpyme",
   "version": "1.0.0",
-  "description": "Sistema web para gestionar facturas de gastos y compras en microempresas de servicios.",
+  "description": "Sistema web para gestionar obras, cobros, clientes, proveedores y rentabilidad en microempresas.",
   "main": "app.js",
   "scripts": {
     "dev": "nodemon app.js",
@@ -16,18 +16,21 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "bcryptjs": "^3.0.3",
+    "bcrypt": "^6.0.0",
     "connect-session-sequelize": "^8.0.6",
+    "connect-sqlite3": "^0.9.16",
     "dayjs": "^1.11.20",
     "dotenv": "^17.4.1",
     "ejs": "^5.0.1",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
     "multer": "^2.1.1",
-    "mysql2": "^3.22.0",
+    "nodemailer": "^8.0.7",
     "pdf-parse": "^2.4.5",
     "pdfkit": "^0.18.0",
-    "sequelize": "^6.37.8"
+    "sequelize": "^6.37.8",
+    "sqlite3": "^6.0.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

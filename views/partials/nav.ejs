@@ -1,29 +1,39 @@
 <aside class="app-sidebar">
-  <div>
+  <div class="sidebar-top">
     <div class="sidebar-brand">
-      <span class="brand-mark">FC</span>
+      <span class="brand-mark">GP</span>
       <div>
-        <h1>FactuControl</h1>
-        <p>Gestión de facturas y proveedores</p>
+        <h1>GestPyme</h1>
+        <p>Control financiero del negocio</p>
       </div>
     </div>
+
     <% if (currentUser) { %>
-      <div class="sidebar-user mt-3">
+      <div class="sidebar-user mt-4">
         <strong><%= currentUser.name %></strong>
-        <div class="text-muted small"><%= currentUser.email %></div>
-        <span class="status-badge pendiente mt-2 d-inline-flex"><%= currentUser.role %></span>
+        <div class="small text-white-50"><%= currentUser.email %></div>
+        <span class="status-badge mt-2"><%= currentUser.role %></span>
       </div>
     <% } %>
+
     <nav class="nav flex-column gap-2 mt-4">
-      <a class="nav-link <%= currentPath === '/' ? 'active' : '' %>" href="/">Panel</a>
+      <a class="nav-link <%= currentPath === '/' ? 'active' : '' %>" href="/">Dashboard</a>
+      <a class="nav-link <%= currentPath === '/obras' ? 'active' : '' %>" href="/obras">Obras</a>
+      <a class="nav-link <%= currentPath === '/clientes' ? 'active' : '' %>" href="/clientes">Clientes</a>
       <a class="nav-link <%= currentPath === '/proveedores' ? 'active' : '' %>" href="/proveedores">Proveedores</a>
       <a class="nav-link <%= currentPath === '/gastos' ? 'active' : '' %>" href="/gastos">Gastos</a>
       <a class="nav-link <%= currentPath === '/compras' ? 'active' : '' %>" href="/compras">Compras</a>
+      <a class="nav-link <%= currentPath === '/cobros' ? 'active' : '' %>" href="/cobros">Cobros</a>
+      <a class="nav-link <%= currentPath === '/cotizaciones' ? 'active' : '' %>" href="/cotizaciones">Cotizaciones</a>
+      <a class="nav-link <%= currentPath === '/presupuestos' ? 'active' : '' %>" href="/presupuestos">Presupuestos</a>
+      <a class="nav-link <%= currentPath === '/rentabilidad' ? 'active' : '' %>" href="/rentabilidad">Rentabilidad</a>
+      <a class="nav-link <%= currentPath === '/reportes' ? 'active' : '' %>" href="/reportes">Reportes</a>
     </nav>
   </div>
+
   <% if (currentUser) { %>
-    <form action="/logout" method="post" class="mt-4">
-      <button class="btn btn-outline-light w-100" type="submit">Cerrar sesión</button>
+    <form action="/api/auth/logout" method="post" class="mt-4">
+      <button class="btn btn-outline-light w-100" type="submit">Cerrar sesion</button>
     </form>
   <% } %>
 </aside>

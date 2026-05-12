@@ -1,0 +1,35 @@
+<%- include('partials/head') %>
+<div class="app-shell">
+  <%- include('partials/nav') %>
+  <main class="app-main">
+    <section class="hero-card">
+      <div>
+        <span class="eyebrow">Exportacion</span>
+        <h2>Reportes descargables</h2>
+        <p>Obtén los PDF, CSV o Excel del mes y la rentabilidad en un clic.</p>
+      </div>
+    </section>
+
+    <section class="report-grid">
+      <article class="report-card">
+        <h3>Reporte mensual</h3>
+        <p>Resumen operativo del mes seleccionado.</p>
+        <div class="d-flex gap-2 flex-wrap">
+          <a class="btn btn-primary" href="/api/reportes/mensual?format=pdf">PDF</a>
+          <a class="btn btn-outline-primary" href="/api/reportes/mensual?format=csv">CSV</a>
+          <a class="btn btn-outline-primary" href="/api/reportes/mensual?format=xlsx">Excel</a>
+        </div>
+      </article>
+      <article class="report-card">
+        <h3>Rentabilidad</h3>
+        <p>Margen por obra con cálculo financiero.</p>
+        <div class="d-flex gap-2 flex-wrap">
+          <a class="btn btn-primary" href="/api/reportes/rentabilidad?format=pdf">PDF</a>
+          <a class="btn btn-outline-primary" href="/api/reportes/rentabilidad?format=csv">CSV</a>
+          <a class="btn btn-outline-primary" href="/api/reportes/rentabilidad?format=xlsx">Excel</a>
+        </div>
+      </article>
+    </section>
+  </main>
+</div>
+<%- include('partials/footer') %>

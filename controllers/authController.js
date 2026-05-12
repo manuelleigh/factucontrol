@@ -10,39 +10,36 @@ const renderLogin = asyncHandler(async (req, res) => {
 });
 
 const login = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  const body = req.body || {};
+  const { email, password } = body;
+  const user = await authenticateUser(email, password);
 
-  try {
-    const user = await authenticateUser(email, password);
-    req.session.regenerate((regenError) => {
-      if (regenError) {
-        return res.status(500).render('login', {
-          title: 'Iniciar sesion',
-          error: 'No se pudo iniciar sesion.',
-          email: req.body?.email || '',
-        });
-      }
+  await new Promise((resolve, reject) => {
+    req.session.regenerate((error) => {
+      if (error) return reject(error);
+      req.session.usuarioId = user.id;
+      req.session.usuario = user;
+      return resolve();
+    });
+  });
 
-      req.session.userId = user.id;
-      req.session.user = user;
-      return res.redirect('/');
-    });
-  } catch (error) {
-    res.status(error.statusCode || 500).render('login', {
-      title: 'Iniciar sesion',
-      error: error.message || 'No se pudo iniciar sesion.',
-      email: req.body?.email || '',
-    });
+  if (req.path.startsWith('/api/')) {
+    return res.json({ ok: true, user, redirectTo: '/' });
   }
+  return res.redirect('/');
 });
 
 const logout = asyncHandler(async (req, res) => {
-  if (!req.session) return res.redirect('/login');
+  if (!req.session) {
+    return req.path.startsWith('/api/') ? res.json({ ok: true }) : res.redirect('/login');
+  }
 
-  req.session.destroy(() => {
-    res.clearCookie('connect.sid');
-    res.redirect('/login');
-  });
+  await new Promise((resolve) => req.session.destroy(() => resolve()));
+  res.clearCookie('connect.sid');
+  if (req.path.startsWith('/api/')) {
+    return res.json({ ok: true, redirectTo: '/login' });
+  }
+  return res.redirect('/login');
 });
 
 module.exports = { login, logout, renderLogin };

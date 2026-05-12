@@ -1,0 +1,54 @@
+<%- include('partials/head') %>
+<div class="app-shell">
+  <%- include('partials/nav') %>
+  <main class="app-main">
+    <section class="hero-card">
+      <div>
+        <span class="eyebrow">Analisis financiero</span>
+        <h2>Rentabilidad por obra</h2>
+        <p>Compara ingresos, egresos, utilidad y margen por proyecto.</p>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn-light" href="/reportes">Descargas</a>
+      </div>
+    </section>
+
+    <section class="panel-card">
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Obra</th>
+              <th>Cliente</th>
+              <th>Ingresos</th>
+              <th>Egresos</th>
+              <th>Utilidad</th>
+              <th>Margen</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% rentabilidad.forEach((item) => { %>
+              <tr class="table-<%= item.color %>">
+                <td><strong><%= item.nombre %></strong></td>
+                <td><%= item.cliente?.razonSocial || 'Sin cliente' %></td>
+                <td><%= helpers.formatCurrency(item.ingresos) %></td>
+                <td><%= helpers.formatCurrency(item.egresos) %></td>
+                <td><%= helpers.formatCurrency(item.utilidad) %></td>
+                <td><%= Number(item.margen || 0).toFixed(2) %>%</td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel-card">
+      <canvas id="chartRentability" height="170"></canvas>
+    </section>
+  </main>
+</div>
+
+<script>
+  window.rentabilidadData = <%- JSON.stringify(rentabilidad) %>;
+</script>
+<%- include('partials/footer') %>

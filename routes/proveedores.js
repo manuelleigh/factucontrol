@@ -1,13 +1,13 @@
 const express = require('express');
-const { create, deactivate, getAll, update } = require('../controllers/proveedorController');
+const { proveedores } = require('../controllers/apiController');
 const { requireAuth, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
 
 router.use(requireAuth);
-router.get('/', getAll);
-router.post('/', requireRole('admin', 'accountant'), create);
-router.put('/:id', requireRole('admin', 'accountant'), update);
-router.put('/:id/desactivar', requireRole('admin'), deactivate);
+router.get('/', proveedores.list);
+router.post('/', requireRole('admin', 'operador'), proveedores.create);
+router.put('/:id', requireRole('admin', 'operador'), proveedores.update);
+router.patch('/:id/desactivar', requireRole('admin'), proveedores.deactivate);
 
 module.exports = router;

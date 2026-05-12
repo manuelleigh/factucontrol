@@ -4,3 +4,5 @@ uploads/*
 !uploads/.gitkeep
 reports/*
 !reports/.gitkeep
+database/*.sqlite
+database/*.db

@@ -2,31 +2,40 @@
 <main class="login-page">
   <section class="login-card">
     <div class="login-copy">
-      <span class="eyebrow">Acceso seguro</span>
-      <h1>Bienvenido a FactuControl</h1>
-      <p>Ingresa con tu usuario para gestionar facturas, proveedores y reportes con control por roles.</p>
+      <span class="eyebrow">GestPyme</span>
+      <h1>Gestion financiera para proyectos reales</h1>
+      <p>
+        Controla obras, clientes, proveedores, cobros y rentabilidad con una
+        interfaz renovada.
+      </p>
       <ul class="login-features">
-        <li>Acceso con sesión persistente</li>
-        <li>Roles para limitar acciones críticas</li>
-        <li>Migraciones versionadas sin `sync()`</li>
+        <li>Sesion segura con bloqueo por intentos</li>
+        <li>Dashboard con alertas y semaforos</li>
+        <li>Exportacion a PDF, CSV y Excel</li>
       </ul>
     </div>
-    <form class="login-form" action="/login" method="post">
-      <h2>Iniciar sesión</h2>
-      <% if (error) { %>
-        <div class="alert alert-danger"><%= error %></div>
-      <% } %>
+    <form class="login-form" id="loginForm">
+      <h2>Iniciar sesion</h2>
+      <div class="alert alert-danger d-none js-login-error"></div>
       <div class="mb-3">
-        <label class="form-label">Correo electrónico</label>
-        <input class="form-control" type="email" name="email" value="<%= email %>" required />
+        <label class="form-label">Correo electronico</label>
+        <input
+          class="form-control"
+          type="email"
+          name="email"
+          value="<%= email %>"
+          required
+        />
       </div>
       <div class="mb-3">
-        <label class="form-label">Contraseña</label>
+        <label class="form-label">Contrasena</label>
         <input class="form-control" type="password" name="password" required />
       </div>
       <button class="btn btn-primary w-100" type="submit">Entrar</button>
-      <p class="login-hint mt-3">Usuario inicial: `admin@factucontrol.local` si aún no se ha creado otro.</p>
     </form>
   </section>
 </main>
+<script>
+  window.loginPage = true;
+</script>
 <%- include('partials/footer') %>

@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const multer = require('multer');
 const { sanitizeFilename } = require('../utils/helpers');
 
@@ -19,19 +20,18 @@ function buildStorage(subdirectory) {
     filename(req, file, cb) {
       const extension = path.extname(file.originalname);
       const base = path.basename(file.originalname, extension);
-      const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-      cb(null, `${unique}-${sanitizeFilename(base)}${extension.toLowerCase()}`);
+      cb(null, `${crypto.randomUUID()}-${sanitizeFilename(base)}${extension.toLowerCase()}`);
     },
   });
 }
 
-function buildUpload({ subdirectory = '', allowed = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'] } = {}) {
+function buildUpload({ subdirectory = '', allowed = ['application/pdf', 'image/jpeg', 'image/png'] } = {}) {
   return multer({
     storage: buildStorage(subdirectory),
     limits: { fileSize: Number(process.env.MAX_FILE_SIZE_MB || 5) * 1024 * 1024 },
     fileFilter(req, file, cb) {
       if (!allowed.includes(file.mimetype)) {
-        const error = new Error('Solo se permiten archivos PDF, JPG, PNG o WEBP.');
+        const error = new Error('Solo se permiten archivos PDF, JPG o PNG.');
         error.statusCode = 400;
         return cb(error);
       }

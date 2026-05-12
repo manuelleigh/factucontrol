@@ -1,0 +1,221 @@
+<%- include('partials/head') %>
+<div class="app-shell">
+  <%- include('partials/nav') %>
+  <main class="app-main">
+    <section class="hero-card">
+      <div>
+        <span class="eyebrow">GestPyme</span>
+        <h2><%= title %></h2>
+        <p><%= description %></p>
+      </div>
+      <div class="hero-actions">
+        <button class="btn btn-light" type="button" data-bs-toggle="modal" data-bs-target="#entityModal">Nuevo registro</button>
+      </div>
+    </section>
+
+    <section class="panel-card">
+      <div class="list-toolbar mb-4">
+        <div>
+          <span class="eyebrow">Listado</span>
+          <h3 class="mb-1"><%= pagination?.totalItems || items.length %> registros</h3>
+          <p class="page-muted mb-0">Usa filtros, orden y paginacion para explorar el modulo con mas precision.</p>
+        </div>
+        <div class="list-toolbar-actions">
+          <span class="status-pill muted">Orden: <%= sort ? sort : 'default' %> · <%= dir === 'desc' ? 'desc' : 'asc' %></span>
+          <% if (query && Object.entries(query).some(([key, value]) => value && !['page', 'pageSize', 'sort', 'dir'].includes(key))) { %>
+            <span class="status-pill success">Filtros activos</span>
+          <% } %>
+        </div>
+      </div>
+
+      <form class="row g-3 mb-4" method="get">
+        <div class="col-md-4">
+          <label class="form-label">Buscar</label>
+          <input class="form-control" type="search" name="search" value="<%= query?.search || '' %>" placeholder="Buscar en este modulo" />
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Pagina</label>
+          <input class="form-control" type="number" name="page" min="1" value="<%= query?.page || 1 %>" />
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Por pagina</label>
+          <% const defaultPageSize = query?.pageSize || (pageSizeOptions && pageSizeOptions[0]) || 12; %>
+          <select class="form-select" name="pageSize">
+            <% (pageSizeOptions || [10, 20, 50]).forEach((size) => { %>
+              <option value="<%= size %>" <%= String(defaultPageSize) === String(size) ? 'selected' : '' %>><%= size %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="col-md-4 d-grid align-items-end">
+          <label class="form-label invisible">Accion</label>
+          <button class="btn btn-outline-primary" type="submit">Aplicar filtros</button>
+        </div>
+
+        <% (filters || []).forEach((filter) => { %>
+          <div class="col-md-3">
+            <label class="form-label"><%= filter.label %></label>
+            <% if (filter.type === 'select') { %>
+              <select class="form-select" name="<%= filter.name %>">
+                <option value="">Todos</option>
+                <% (filter.options || []).forEach((option, index) => { %>
+                  <% if (option !== '') { %>
+                    <% const label = Array.isArray(filter.labels) ? filter.labels[index] : option %>
+                    <option value="<%= option %>" <%= String(query?.[filter.name] || '') === String(option) ? 'selected' : '' %>><%= label %></option>
+                  <% } %>
+                <% }) %>
+              </select>
+            <% } else if (filter.type === 'date') { %>
+              <input class="form-control" type="date" name="<%= filter.name %>" value="<%= query?.[filter.name] || '' %>" />
+            <% } else if (filter.type === 'number') { %>
+              <input class="form-control" type="number" name="<%= filter.name %>" value="<%= query?.[filter.name] || '' %>" />
+            <% } %>
+          </div>
+        <% }) %>
+      </form>
+
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <% columns.forEach((column) => { %>
+                <% const isActiveSort = sort === column.key; %>
+                <% const nextDir = isActiveSort && dir === 'asc' ? 'desc' : 'asc'; %>
+                <th>
+                  <a class="sort-link" href="<%= helpers.buildQueryString(query || {}, { sort: column.key, dir: nextDir, page: 1 }) %>">
+                    <span><%= column.label %></span>
+                    <span class="sort-indicator <%= isActiveSort ? 'active' : '' %>"><%= isActiveSort ? (dir === 'desc' ? '↓' : '↑') : '↕' %></span>
+                  </a>
+                </th>
+              <% }) %>
+              <th class="text-end">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (items && items.length) { %>
+              <% items.forEach((item) => { %>
+                <tr>
+                  <% columns.forEach((column) => { %>
+                    <% const value = helpers.getByPath(item, column.key); %>
+                    <td>
+                      <% if (column.format === 'currency') { %>
+                        <%= helpers.formatCurrency(value || 0) %>
+                      <% } else if (column.format === 'yesNo') { %>
+                        <span class="status-pill <%= value ? 'success' : 'muted' %>"><%= helpers.yesNo(value) %></span>
+                      <% } else if (column.format === 'period') { %>
+                        <%= item.mes %>/<%= item.anio %>
+                      <% } else { %>
+                        <%= value || '-' %>
+                      <% } %>
+                    </td>
+                  <% }) %>
+                  <td class="text-end">
+                    <button
+                      class="btn btn-sm btn-outline-secondary js-edit-record"
+                      type="button"
+                      data-record="<%- helpers.encodeJson(item) %>"
+                      data-bs-toggle="modal"
+                      data-bs-target="#entityModal"
+                    >
+                      Editar
+                    </button>
+                    <% (extraButtons || []).forEach((button) => { %>
+                      <button
+                        class="btn btn-sm <%= button.className || 'btn-outline-primary' %> js-entity-action"
+                        type="button"
+                        data-id="<%= item.id %>"
+                        data-action="<%= button.action %>"
+                        data-base-url="<%= endpoint %>"
+                      >
+                        <%= button.label %>
+                      </button>
+                    <% }) %>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="<%= columns.length + 1 %>" class="text-center text-muted py-5">Sin registros por ahora.</td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+      <% if (pagination && pagination.totalPages > 1) { %>
+        <div class="d-flex justify-content-between align-items-center mt-3">
+          <small class="text-muted">Pagina <%= pagination.page %> de <%= pagination.totalPages %></small>
+          <div class="btn-group">
+            <% if (pagination.hasPrev) { %>
+              <a class="btn btn-outline-primary btn-sm" href="<%= helpers.buildQueryString(query || {}, { page: pagination.page - 1 }) %>">Anterior</a>
+            <% } %>
+            <% if (pagination.hasNext) { %>
+              <a class="btn btn-outline-primary btn-sm" href="<%= helpers.buildQueryString(query || {}, { page: pagination.page + 1 }) %>">Siguiente</a>
+            <% } %>
+          </div>
+        </div>
+      <% } %>
+    </section>
+  </main>
+</div>
+
+<div class="modal fade" id="entityModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <form class="entity-form" method="post" enctype="multipart/form-data" data-api-endpoint="<%= endpoint %>">
+        <div class="modal-header">
+          <div>
+            <span class="eyebrow">Formulario</span>
+            <h5 class="modal-title">Nuevo <%= resource %></h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="id" />
+          <div class="row g-3">
+            <% fields.forEach((field) => { %>
+              <div class="<%= field.type === 'textarea' ? 'col-12' : field.type === 'file' ? 'col-12' : 'col-md-6' %>">
+                <% if (field.type === 'checkbox') { %>
+                  <div class="form-check mt-4">
+                    <input class="form-check-input" type="checkbox" name="<%= field.name %>" id="<%= field.name %>" checked />
+                    <label class="form-check-label" for="<%= field.name %>"><%= field.label %></label>
+                  </div>
+                <% } else { %>
+                  <label class="form-label"><%= field.label %></label>
+                  <% if (field.type === 'select') { %>
+                    <select class="form-select" name="<%= field.name %>" <%= field.required ? 'required' : '' %>>
+                      <% if (Array.isArray(field.options) && field.options.length && typeof field.options[0] === 'object') { %>
+                        <% field.options.forEach((option) => { %>
+                          <option value="<%= option.value %>"><%= option.label %></option>
+                        <% }) %>
+                      <% } else { %>
+                        <% field.options.forEach((option) => { %>
+                          <option value="<%= option %>"><%= option %></option>
+                        <% }) %>
+                      <% } %>
+                    </select>
+                  <% } else if (field.type === 'textarea') { %>
+                    <textarea class="form-control" name="<%= field.name %>" rows="3" <%= field.required ? 'required' : '' %>></textarea>
+                  <% } else if (field.type === 'file') { %>
+                    <input class="form-control" type="file" name="<%= field.name %>" accept=".pdf,image/*" />
+                  <% } else { %>
+                    <input class="form-control" type="<%= field.type || 'text' %>" name="<%= field.name %>" <%= field.required ? 'required' : '' %> <%= field.min !== undefined ? `min="${field.min}"` : '' %> <%= field.max !== undefined ? `max="${field.max}"` : '' %> <%= field.step !== undefined ? `step="${field.step}"` : '' %> />
+                  <% } %>
+                <% } %>
+              </div>
+            <% }) %>
+          </div>
+          <div class="alert alert-danger mt-4 d-none js-form-errors"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-primary" type="submit">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.gestpymePage = <%- JSON.stringify({ endpoint, resource, extraButtons }) %>;
+</script>
+<%- include('partials/footer') %>
