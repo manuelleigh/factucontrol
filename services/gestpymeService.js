@@ -202,13 +202,26 @@ async function saveCliente(body, userId = null, id = null) {
   const errors = {};
   validateRequired(body.razonSocial, 'razonSocial', 'La razon social es obligatoria.', errors);
   validateRequired(body.ruc, 'ruc', 'El RUC es obligatorio.', errors);
-  if (String(body.ruc || '').replace(/\D/g, '').length !== 11) errors.ruc = 'El RUC debe tener 11 digitos.';
+  const ruc = String(body.ruc || '').replace(/\D/g, '');
+  if (ruc.length !== 11) errors.ruc = 'El RUC debe tener 11 digitos.';
   if (body.correo && !String(body.correo).includes('@')) errors.correo = 'El correo debe ser valido.';
   if (Object.keys(errors).length) throw createHttpError(400, 'Revisa los datos del cliente.', errors);
 
+  const duplicate = await Cliente.findOne({
+    where: {
+      ruc,
+      ...(id ? { id: { [Op.ne]: id } } : {}),
+    },
+  });
+  if (duplicate) {
+    throw createHttpError(400, 'Revisa los datos del cliente.', {
+      ruc: 'Ya existe un cliente con este RUC.',
+    });
+  }
+
   const payload = {
     razonSocial: normalizeText(body.razonSocial),
-    ruc: String(body.ruc || '').replace(/\D/g, ''),
+    ruc,
     direccion: normalizeText(body.direccion),
     telefono: normalizeText(body.telefono),
     correo: normalizeText(body.correo),
