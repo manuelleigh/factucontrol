@@ -164,16 +164,20 @@
         </div>
       </div>
       <div class="timeline-list">
-        <% dashboard.actividadReciente.forEach((item) => { %>
-          <div class="timeline-item">
-            <span class="status-dot"></span>
-            <div>
-              <strong><%= item.modulo %> &middot; <%= item.accion %></strong>
-              <p><%= item.entidad || 'Registro' %> #<%= item.entidad_id || '-' %></p>
+        <% if (dashboard.actividadReciente.length) { %>
+          <% dashboard.actividadReciente.forEach((item) => { %>
+            <div class="timeline-item">
+              <span class="status-dot"></span>
+              <div>
+                <strong><%= item.modulo %> &middot; <%= item.accion %></strong>
+                <p><%= item.entidad || 'Registro' %> #<%= item.entidad_id || '-' %></p>
+              </div>
+              <span class="text-muted small"><%= helpers.formatDateReadable(item.created_at || item.createdAt) %></span>
             </div>
-            <span class="text-muted small"><%= helpers.formatDateReadable(item.created_at || item.createdAt) %></span>
-          </div>
-        <% }) %>
+          <% }) %>
+        <% } else { %>
+          <p class="empty-state">No hay actividad reciente registrada.</p>
+        <% } %>
       </div>
     </section>
   </main>

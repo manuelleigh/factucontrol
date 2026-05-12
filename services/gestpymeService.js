@@ -28,6 +28,7 @@ const {
 } = require('../utils/constants');
 const { writeAudit } = require('./auditService');
 const { sendNotificationEmail } = require('./notificationService');
+const overdueNotificationCache = new Map();
 
 function normalizeText(value) {
   return String(value || '').trim();
@@ -950,15 +951,29 @@ async function getRentabilidadData() {
 }
 
 async function sendOverdueNotificationSummary(userEmail) {
+  const email = normalizeText(userEmail).toLowerCase();
+  if (!email) return { sent: false, reason: 'missing-email' };
+
   const gastosVencidos = await GastoOperativo.count({ where: { estado: 'Vencida' } });
   const cobrosVencidos = await Cobro.count({ where: { estado: 'Vencido' } });
+  if (!gastosVencidos && !cobrosVencidos) {
+    return { sent: false, reason: 'no-alerts' };
+  }
+
+  const today = dayjs().format('YYYY-MM-DD');
+  if (overdueNotificationCache.get(email) === today) {
+    return { sent: false, reason: 'cooldown' };
+  }
+
   const alertText = `Tienes ${gastosVencidos} gastos vencidos y ${cobrosVencidos} cobros vencidos.`;
   await sendNotificationEmail({
-    to: userEmail,
+    to: email,
     subject: 'Alerta GestPyme',
     text: alertText,
     html: `<p>${alertText}</p>`,
   });
+  overdueNotificationCache.set(email, today);
+  return { sent: true, reason: 'sent' };
 }
 
 module.exports = {
