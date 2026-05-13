@@ -139,27 +139,27 @@ npm start
 
 El archivo de ejemplo es `.env.example`.
 
-| Variable | Descripcion | Valor por defecto |
-| --- | --- | --- |
-| `PORT` | Puerto HTTP de la aplicacion | `3000` |
-| `DB_PATH` | Ruta de la base SQLite principal | `database/gestpyme.sqlite` |
-| `UPLOAD_DIR` | Carpeta para adjuntos | `uploads` |
-| `MAX_FILE_SIZE_MB` | Tamano maximo por archivo | `5` |
-| `SESSION_SECRET` | Secreto de sesiones | `gestpyme-dev-secret` en desarrollo |
-| `SESSION_MAX_AGE` | Vigencia de la cookie de sesion | `7200000` |
-| `ADMIN_NAME` | Nombre del usuario administrador inicial | `Administrador` |
-| `ADMIN_EMAIL` | Correo del admin inicial | `admin@gestpyme.pe` |
-| `ADMIN_PASSWORD` | Password inicial del admin | `GestPyme123!` |
-| `ADMIN_ROLE` | Rol del admin inicial | `admin` |
-| `SMTP_HOST` | Host SMTP para notificaciones | vacio |
-| `SMTP_PORT` | Puerto SMTP | `587` |
-| `SMTP_SECURE` | Uso de TLS/SSL | `false` |
-| `SMTP_USER` | Usuario SMTP | vacio |
-| `SMTP_PASS` | Password SMTP | vacio |
-| `SMTP_FROM` | Remitente de correo | vacio |
-| `GROQ_API_KEY` | Clave para el asistente IA | vacio |
-| `GROQ_MODEL` | Modelo remoto para IA | `llama-3.1-8b-instant` |
-| `GROQ_MAX_COMPLETION_TOKENS` | Limite de tokens de salida | `220` |
+| Variable                     | Descripcion                              | Valor por defecto                   |
+| ---------------------------- | ---------------------------------------- | ----------------------------------- |
+| `PORT`                       | Puerto HTTP de la aplicacion             | `3000`                              |
+| `DB_PATH`                    | Ruta de la base SQLite principal         | `database/gestpyme.sqlite`          |
+| `UPLOAD_DIR`                 | Carpeta para adjuntos                    | `uploads`                           |
+| `MAX_FILE_SIZE_MB`           | Tamano maximo por archivo                | `5`                                 |
+| `SESSION_SECRET`             | Secreto de sesiones                      | `gestpyme-dev-secret` en desarrollo |
+| `SESSION_MAX_AGE`            | Vigencia de la cookie de sesion          | `7200000`                           |
+| `ADMIN_NAME`                 | Nombre del usuario administrador inicial | `Administrador`                     |
+| `ADMIN_EMAIL`                | Correo del admin inicial                 | `admin@gestpyme.pe`                 |
+| `ADMIN_PASSWORD`             | Password inicial del admin               | `GestPyme123!`                      |
+| `ADMIN_ROLE`                 | Rol del admin inicial                    | `admin`                             |
+| `SMTP_HOST`                  | Host SMTP para notificaciones            | vacio                               |
+| `SMTP_PORT`                  | Puerto SMTP                              | `587`                               |
+| `SMTP_SECURE`                | Uso de TLS/SSL                           | `false`                             |
+| `SMTP_USER`                  | Usuario SMTP                             | vacio                               |
+| `SMTP_PASS`                  | Password SMTP                            | vacio                               |
+| `SMTP_FROM`                  | Remitente de correo                      | vacio                               |
+| `GROQ_API_KEY`               | Clave para el asistente IA               | vacio                               |
+| `GROQ_MODEL`                 | Modelo remoto para IA                    | `llama-3.1-8b-instant`              |
+| `GROQ_MAX_COMPLETION_TOKENS` | Limite de tokens de salida               | `220`                               |
 
 ## Scripts disponibles
 
@@ -315,135 +315,135 @@ El script de bootstrap crea o actualiza el usuario administrador inicial con los
 
 ### Autenticacion
 
-| Metodo | Ruta | Descripcion |
-| --- | --- | --- |
-| `GET` | `/login` | Renderiza login |
-| `POST` | `/api/auth/login` | Inicia sesion |
-| `POST` | `/api/auth/logout` | Cierra sesion |
-| `DELETE` | `/api/auth/logout` | Cierra sesion |
-| `POST` | `/logout` | Cierra sesion |
+| Metodo   | Ruta               | Descripcion     |
+| -------- | ------------------ | --------------- |
+| `GET`    | `/login`           | Renderiza login |
+| `POST`   | `/api/auth/login`  | Inicia sesion   |
+| `POST`   | `/api/auth/logout` | Cierra sesion   |
+| `DELETE` | `/api/auth/logout` | Cierra sesion   |
+| `POST`   | `/logout`          | Cierra sesion   |
 
 ### Paginas web
 
 Todas estas rutas requieren autenticacion:
 
-| Metodo | Ruta | Vista |
-| --- | --- | --- |
-| `GET` | `/` | Dashboard |
-| `GET` | `/proveedores` | Proveedores |
-| `GET` | `/clientes` | Clientes |
-| `GET` | `/obras` | Obras |
-| `GET` | `/categorias` | Categorias |
-| `GET` | `/cobros` | Cobros |
-| `GET` | `/presupuestos` | Presupuestos |
-| `GET` | `/cotizaciones` | Cotizaciones |
-| `GET` | `/gastos` | Gastos operativos |
-| `GET` | `/compras` | Compras de bienes |
-| `GET` | `/rentabilidad` | Rentabilidad |
-| `GET` | `/reportes` | Reportes |
-| `GET` | `/asistente` | Asistente IA |
+| Metodo | Ruta            | Vista             |
+| ------ | --------------- | ----------------- |
+| `GET`  | `/`             | Dashboard         |
+| `GET`  | `/proveedores`  | Proveedores       |
+| `GET`  | `/clientes`     | Clientes          |
+| `GET`  | `/obras`        | Obras             |
+| `GET`  | `/categorias`   | Categorias        |
+| `GET`  | `/cobros`       | Cobros            |
+| `GET`  | `/presupuestos` | Presupuestos      |
+| `GET`  | `/cotizaciones` | Cotizaciones      |
+| `GET`  | `/gastos`       | Gastos operativos |
+| `GET`  | `/compras`      | Compras de bienes |
+| `GET`  | `/rentabilidad` | Rentabilidad      |
+| `GET`  | `/reportes`     | Reportes          |
+| `GET`  | `/asistente`    | Asistente IA      |
 
 ### API principal
 
 #### Dashboard y rentabilidad
 
-| Metodo | Ruta | Descripcion |
-| --- | --- | --- |
-| `GET` | `/api/dashboard` | Resumen general con alertas |
-| `GET` | `/api/rentabilidad` | Ranking de rentabilidad |
+| Metodo | Ruta                | Descripcion                 |
+| ------ | ------------------- | --------------------------- |
+| `GET`  | `/api/dashboard`    | Resumen general con alertas |
+| `GET`  | `/api/rentabilidad` | Ranking de rentabilidad     |
 
 #### Proveedores
 
-| Metodo | Ruta | Descripcion |
-| --- | --- | --- |
-| `GET` | `/api/proveedores` | Listado |
-| `POST` | `/api/proveedores` | Crear |
-| `PUT` | `/api/proveedores/:id` | Actualizar |
-| `PATCH` | `/api/proveedores/:id/desactivar` | Desactivar |
+| Metodo  | Ruta                              | Descripcion |
+| ------- | --------------------------------- | ----------- |
+| `GET`   | `/api/proveedores`                | Listado     |
+| `POST`  | `/api/proveedores`                | Crear       |
+| `PUT`   | `/api/proveedores/:id`            | Actualizar  |
+| `PATCH` | `/api/proveedores/:id/desactivar` | Desactivar  |
 
 #### Clientes
 
-| Metodo | Ruta | Descripcion |
-| --- | --- | --- |
-| `GET` | `/api/clientes` | Listado |
-| `POST` | `/api/clientes` | Crear |
-| `PUT` | `/api/clientes/:id` | Actualizar |
-| `PATCH` | `/api/clientes/:id/desactivar` | Desactivar |
+| Metodo  | Ruta                           | Descripcion |
+| ------- | ------------------------------ | ----------- |
+| `GET`   | `/api/clientes`                | Listado     |
+| `POST`  | `/api/clientes`                | Crear       |
+| `PUT`   | `/api/clientes/:id`            | Actualizar  |
+| `PATCH` | `/api/clientes/:id/desactivar` | Desactivar  |
 
 #### Obras
 
-| Metodo | Ruta | Descripcion |
-| --- | --- | --- |
-| `GET` | `/api/obras` | Listado |
-| `POST` | `/api/obras` | Crear |
-| `PUT` | `/api/obras/:id` | Actualizar |
+| Metodo  | Ruta                    | Descripcion |
+| ------- | ----------------------- | ----------- |
+| `GET`   | `/api/obras`            | Listado     |
+| `POST`  | `/api/obras`            | Crear       |
+| `PUT`   | `/api/obras/:id`        | Actualizar  |
 | `PATCH` | `/api/obras/:id/cerrar` | Cerrar obra |
 
 #### Categorias
 
-| Metodo | Ruta | Descripcion |
-| --- | --- | --- |
-| `GET` | `/api/categorias` | Listado |
-| `POST` | `/api/categorias` | Crear |
-| `PUT` | `/api/categorias/:id` | Actualizar |
+| Metodo | Ruta                  | Descripcion |
+| ------ | --------------------- | ----------- |
+| `GET`  | `/api/categorias`     | Listado     |
+| `POST` | `/api/categorias`     | Crear       |
+| `PUT`  | `/api/categorias/:id` | Actualizar  |
 
 #### Cobros
 
-| Metodo | Ruta | Descripcion |
-| --- | --- | --- |
-| `GET` | `/api/cobros` | Listado |
-| `POST` | `/api/cobros` | Crear con adjunto |
-| `PUT` | `/api/cobros/:id` | Actualizar con adjunto |
+| Metodo | Ruta              | Descripcion            |
+| ------ | ----------------- | ---------------------- |
+| `GET`  | `/api/cobros`     | Listado                |
+| `POST` | `/api/cobros`     | Crear con adjunto      |
+| `PUT`  | `/api/cobros/:id` | Actualizar con adjunto |
 
 #### Presupuestos
 
-| Metodo | Ruta | Descripcion |
-| --- | --- | --- |
-| `GET` | `/api/presupuestos` | Listado |
-| `POST` | `/api/presupuestos` | Crear |
-| `PUT` | `/api/presupuestos/:id` | Actualizar |
-| `PATCH` | `/api/presupuestos/:id/aprobar` | Aprobar |
-| `PATCH` | `/api/presupuestos/:id/rechazar` | Rechazar |
+| Metodo  | Ruta                             | Descripcion |
+| ------- | -------------------------------- | ----------- |
+| `GET`   | `/api/presupuestos`              | Listado     |
+| `POST`  | `/api/presupuestos`              | Crear       |
+| `PUT`   | `/api/presupuestos/:id`          | Actualizar  |
+| `PATCH` | `/api/presupuestos/:id/aprobar`  | Aprobar     |
+| `PATCH` | `/api/presupuestos/:id/rechazar` | Rechazar    |
 
 #### Cotizaciones
 
-| Metodo | Ruta | Descripcion |
-| --- | --- | --- |
-| `GET` | `/api/cotizaciones` | Listado |
-| `POST` | `/api/cotizaciones` | Crear |
-| `PUT` | `/api/cotizaciones/:id` | Actualizar |
-| `PATCH` | `/api/cotizaciones/:id/aprobar` | Aprobar |
-| `PATCH` | `/api/cotizaciones/:id/rechazar` | Rechazar |
+| Metodo  | Ruta                             | Descripcion |
+| ------- | -------------------------------- | ----------- |
+| `GET`   | `/api/cotizaciones`              | Listado     |
+| `POST`  | `/api/cotizaciones`              | Crear       |
+| `PUT`   | `/api/cotizaciones/:id`          | Actualizar  |
+| `PATCH` | `/api/cotizaciones/:id/aprobar`  | Aprobar     |
+| `PATCH` | `/api/cotizaciones/:id/rechazar` | Rechazar    |
 
 #### Gastos
 
-| Metodo | Ruta | Descripcion |
-| --- | --- | --- |
-| `GET` | `/api/gastos` | Listado |
-| `POST` | `/api/gastos` | Crear con adjunto |
-| `PUT` | `/api/gastos/:id` | Actualizar con adjunto |
-| `PATCH` | `/api/gastos/:id/pagar` | Marcar como pagado |
+| Metodo  | Ruta                    | Descripcion            |
+| ------- | ----------------------- | ---------------------- |
+| `GET`   | `/api/gastos`           | Listado                |
+| `POST`  | `/api/gastos`           | Crear con adjunto      |
+| `PUT`   | `/api/gastos/:id`       | Actualizar con adjunto |
+| `PATCH` | `/api/gastos/:id/pagar` | Marcar como pagado     |
 
 #### Compras
 
-| Metodo | Ruta | Descripcion |
-| --- | --- | --- |
-| `GET` | `/api/compras` | Listado |
-| `POST` | `/api/compras` | Crear con adjunto |
-| `PUT` | `/api/compras/:id` | Actualizar con adjunto |
-| `PATCH` | `/api/compras/:id/pagar` | Marcar como pagado |
+| Metodo  | Ruta                     | Descripcion            |
+| ------- | ------------------------ | ---------------------- |
+| `GET`   | `/api/compras`           | Listado                |
+| `POST`  | `/api/compras`           | Crear con adjunto      |
+| `PUT`   | `/api/compras/:id`       | Actualizar con adjunto |
+| `PATCH` | `/api/compras/:id/pagar` | Marcar como pagado     |
 
 #### Reportes
 
-| Metodo | Ruta | Descripcion |
-| --- | --- | --- |
-| `GET` | `/api/reportes/mensual` | Reporte mensual en PDF, CSV o XLSX |
-| `GET` | `/api/reportes/rentabilidad` | Reporte de rentabilidad en PDF, CSV o XLSX |
+| Metodo | Ruta                         | Descripcion                                |
+| ------ | ---------------------------- | ------------------------------------------ |
+| `GET`  | `/api/reportes/mensual`      | Reporte mensual en PDF, CSV o XLSX         |
+| `GET`  | `/api/reportes/rentabilidad` | Reporte de rentabilidad en PDF, CSV o XLSX |
 
 #### Asistente
 
-| Metodo | Ruta | Descripcion |
-| --- | --- | --- |
+| Metodo | Ruta                       | Descripcion              |
+| ------ | -------------------------- | ------------------------ |
 | `POST` | `/api/asistente/consultar` | Consulta al asistente IA |
 
 ## Modelo de datos
@@ -470,171 +470,171 @@ Las entidades Sequelize se definen en `models/` y las relaciones se registran en
 
 #### `User`
 
-| Campo | Tipo | Req | Descripcion |
-| --- | --- | --- | --- |
-| `id` | integer | si | Identificador autoincremental |
-| `name` | string(120) | si | Nombre visible del usuario |
-| `email` | string(160) | si | Correo unico de acceso |
-| `passwordHash` | string(255) | si | Hash bcrypt de la contraseña |
-| `role` | enum `admin` / `operador` | si | Rol de permisos |
-| `active` | boolean | si | Usuario habilitado |
-| `failedAttempts` | integer | si | Intentos fallidos acumulados |
-| `blockedUntil` | datetime | no | Bloqueo temporal por intentos |
-| `lastLoginAt` | datetime | no | Fecha del ultimo acceso |
+| Campo            | Tipo                      | Req | Descripcion                   |
+| ---------------- | ------------------------- | --- | ----------------------------- |
+| `id`             | integer                   | si  | Identificador autoincremental |
+| `name`           | string(120)               | si  | Nombre visible del usuario    |
+| `email`          | string(160)               | si  | Correo unico de acceso        |
+| `passwordHash`   | string(255)               | si  | Hash bcrypt de la contraseña  |
+| `role`           | enum `admin` / `operador` | si  | Rol de permisos               |
+| `active`         | boolean                   | si  | Usuario habilitado            |
+| `failedAttempts` | integer                   | si  | Intentos fallidos acumulados  |
+| `blockedUntil`   | datetime                  | no  | Bloqueo temporal por intentos |
+| `lastLoginAt`    | datetime                  | no  | Fecha del ultimo acceso       |
 
 #### `Proveedor`
 
-| Campo | Tipo | Req | Descripcion |
-| --- | --- | --- | --- |
-| `id` | integer | si | Identificador |
-| `nombre` | string(120) | si | Razon social o nombre comercial |
-| `identificacionFiscal` | string(50) | si | RUC/NIF/identificador fiscal unico |
-| `giro` | string(120) | no | Actividad comercial |
-| `telefono` | string(30) | no | Telefono de contacto |
-| `correo` | string(120) | no | Correo de contacto |
-| `activo` | boolean | si | Estado del proveedor |
-| `fechaRegistro` | date | si | Fecha de alta |
+| Campo                  | Tipo        | Req | Descripcion                        |
+| ---------------------- | ----------- | --- | ---------------------------------- |
+| `id`                   | integer     | si  | Identificador                      |
+| `nombre`               | string(120) | si  | Razon social o nombre comercial    |
+| `identificacionFiscal` | string(50)  | si  | RUC/NIF/identificador fiscal unico |
+| `giro`                 | string(120) | no  | Actividad comercial                |
+| `telefono`             | string(30)  | no  | Telefono de contacto               |
+| `correo`               | string(120) | no  | Correo de contacto                 |
+| `activo`               | boolean     | si  | Estado del proveedor               |
+| `fechaRegistro`        | date        | si  | Fecha de alta                      |
 
 #### `Cliente`
 
-| Campo | Tipo | Req | Descripcion |
-| --- | --- | --- | --- |
-| `id` | integer | si | Identificador |
-| `razonSocial` | string(160) | si | Nombre legal del cliente |
-| `ruc` | string(11) | si | RUC unico |
-| `direccion` | string(180) | no | Direccion fisica |
-| `telefono` | string(30) | no | Telefono de contacto |
-| `correo` | string(120) | no | Correo de contacto |
-| `activo` | boolean | si | Estado del cliente |
+| Campo         | Tipo        | Req | Descripcion              |
+| ------------- | ----------- | --- | ------------------------ |
+| `id`          | integer     | si  | Identificador            |
+| `razonSocial` | string(160) | si  | Nombre legal del cliente |
+| `ruc`         | string(11)  | si  | RUC unico                |
+| `direccion`   | string(180) | no  | Direccion fisica         |
+| `telefono`    | string(30)  | no  | Telefono de contacto     |
+| `correo`      | string(120) | no  | Correo de contacto       |
+| `activo`      | boolean     | si  | Estado del cliente       |
 
 #### `Obra`
 
-| Campo | Tipo | Req | Descripcion |
-| --- | --- | --- | --- |
-| `id` | integer | si | Identificador |
-| `nombre` | string(160) | si | Nombre del proyecto |
-| `clienteId` | integer | si | Cliente asociado |
-| `fechaInicio` | date | no | Inicio de ejecucion |
-| `fechaFinEstimada` | date | no | Fin estimado |
-| `presupuestoTotal` | decimal(14,2) | si | Presupuesto asignado |
-| `estado` | enum | si | `En formulacion`, `En ejecucion`, `Finalizada`, `Cerrada` |
-| `descripcion` | text | no | Descripcion del alcance |
-| `activo` | boolean | si | Estado operativo |
+| Campo              | Tipo          | Req | Descripcion                                               |
+| ------------------ | ------------- | --- | --------------------------------------------------------- |
+| `id`               | integer       | si  | Identificador                                             |
+| `nombre`           | string(160)   | si  | Nombre del proyecto                                       |
+| `clienteId`        | integer       | si  | Cliente asociado                                          |
+| `fechaInicio`      | date          | no  | Inicio de ejecucion                                       |
+| `fechaFinEstimada` | date          | no  | Fin estimado                                              |
+| `presupuestoTotal` | decimal(14,2) | si  | Presupuesto asignado                                      |
+| `estado`           | enum          | si  | `En formulacion`, `En ejecucion`, `Finalizada`, `Cerrada` |
+| `descripcion`      | text          | no  | Descripcion del alcance                                   |
+| `activo`           | boolean       | si  | Estado operativo                                          |
 
 #### `Cobro`
 
-| Campo | Tipo | Req | Descripcion |
-| --- | --- | --- | --- |
-| `id` | integer | si | Identificador |
-| `obraId` | integer | si | Obra relacionada |
-| `clienteId` | integer | si | Cliente relacionado |
-| `montoCobrado` | decimal(14,2) | si | Importe cobrado |
-| `fechaCobro` | date | si | Fecha del cobro |
-| `metodoCobro` | enum | si | `Efectivo` o `Transferencia` |
-| `estado` | enum | si | `Cobrado`, `Pendiente`, `Vencido` |
-| `concepto` | string(255) | si | Descripcion del cobro |
-| `comprobanteAdjunto` | string(255) | no | Ruta del archivo subido |
+| Campo                | Tipo          | Req | Descripcion                       |
+| -------------------- | ------------- | --- | --------------------------------- |
+| `id`                 | integer       | si  | Identificador                     |
+| `obraId`             | integer       | si  | Obra relacionada                  |
+| `clienteId`          | integer       | si  | Cliente relacionado               |
+| `montoCobrado`       | decimal(14,2) | si  | Importe cobrado                   |
+| `fechaCobro`         | date          | si  | Fecha del cobro                   |
+| `metodoCobro`        | enum          | si  | `Efectivo` o `Transferencia`      |
+| `estado`             | enum          | si  | `Cobrado`, `Pendiente`, `Vencido` |
+| `concepto`           | string(255)   | si  | Descripcion del cobro             |
+| `comprobanteAdjunto` | string(255)   | no  | Ruta del archivo subido           |
 
 #### `Categoria`
 
-| Campo | Tipo | Req | Descripcion |
-| --- | --- | --- | --- |
-| `id` | integer | si | Identificador |
-| `nombre` | string(120) | si | Nombre unico |
-| `tipo` | enum | si | `gasto_operativo` o `compra_bien` |
-| `presupuestoMensual` | decimal(14,2) | si | Presupuesto de referencia |
-| `mes` | integer | si | Mes del periodo |
-| `anio` | integer | si | Anio del periodo |
-| `activo` | boolean | si | Estado de la categoria |
+| Campo                | Tipo          | Req | Descripcion                       |
+| -------------------- | ------------- | --- | --------------------------------- |
+| `id`                 | integer       | si  | Identificador                     |
+| `nombre`             | string(120)   | si  | Nombre unico                      |
+| `tipo`               | enum          | si  | `gasto_operativo` o `compra_bien` |
+| `presupuestoMensual` | decimal(14,2) | si  | Presupuesto de referencia         |
+| `mes`                | integer       | si  | Mes del periodo                   |
+| `anio`               | integer       | si  | Anio del periodo                  |
+| `activo`             | boolean       | si  | Estado de la categoria            |
 
 #### `Presupuesto`
 
-| Campo | Tipo | Req | Descripcion |
-| --- | --- | --- | --- |
-| `id` | integer | si | Identificador |
-| `clienteId` | integer | si | Cliente solicitante |
-| `nombre` | string(160) | si | Nombre del presupuesto |
-| `descripcion` | text | no | Alcance o detalle |
-| `montoEstimado` | decimal(14,2) | si | Importe propuesto |
-| `fechaSolicitud` | date | si | Fecha de ingreso |
-| `estado` | enum | si | `Pendiente`, `Aprobado`, `Rechazado` |
-| `obraId` | integer | no | Obra generada o vinculada tras aprobar |
+| Campo            | Tipo          | Req | Descripcion                            |
+| ---------------- | ------------- | --- | -------------------------------------- |
+| `id`             | integer       | si  | Identificador                          |
+| `clienteId`      | integer       | si  | Cliente solicitante                    |
+| `nombre`         | string(160)   | si  | Nombre del presupuesto                 |
+| `descripcion`    | text          | no  | Alcance o detalle                      |
+| `montoEstimado`  | decimal(14,2) | si  | Importe propuesto                      |
+| `fechaSolicitud` | date          | si  | Fecha de ingreso                       |
+| `estado`         | enum          | si  | `Pendiente`, `Aprobado`, `Rechazado`   |
+| `obraId`         | integer       | no  | Obra generada o vinculada tras aprobar |
 
 #### `Cotizacion`
 
-| Campo | Tipo | Req | Descripcion |
-| --- | --- | --- | --- |
-| `id` | integer | si | Identificador |
-| `proveedorId` | integer | si | Proveedor que cotiza |
-| `obraId` | integer | si | Obra asociada |
-| `descripcion` | string(255) | si | Descripcion de la oferta |
-| `monto` | decimal(14,2) | si | Importe cotizado |
-| `fechaVigencia` | date | si | Fecha limite de validez |
-| `estado` | enum | si | `Pendiente`, `Aprobada`, `Rechazada` |
-| `facturaCompraId` | integer | no | Factura de compra vinculada |
+| Campo             | Tipo          | Req | Descripcion                          |
+| ----------------- | ------------- | --- | ------------------------------------ |
+| `id`              | integer       | si  | Identificador                        |
+| `proveedorId`     | integer       | si  | Proveedor que cotiza                 |
+| `obraId`          | integer       | si  | Obra asociada                        |
+| `descripcion`     | string(255)   | si  | Descripcion de la oferta             |
+| `monto`           | decimal(14,2) | si  | Importe cotizado                     |
+| `fechaVigencia`   | date          | si  | Fecha limite de validez              |
+| `estado`          | enum          | si  | `Pendiente`, `Aprobada`, `Rechazada` |
+| `facturaCompraId` | integer       | no  | Factura de compra vinculada          |
 
 #### `GastoOperativo`
 
-| Campo | Tipo | Req | Descripcion |
-| --- | --- | --- | --- |
-| `id` | integer | si | Identificador |
-| `proveedorId` | integer | si | Proveedor facturador |
-| `obraId` | integer | si | Obra consumidora del gasto |
-| `categoriaId` | integer | si | Categoria del gasto |
-| `categoriaNombre` | string(80) | si | Snapshot del nombre de categoria |
-| `numeroFactura` | string(60) | si | Numero de documento |
-| `fechaEmision` | date | si | Fecha de emision |
-| `fechaVencimiento` | date | si | Fecha de vencimiento |
-| `concepto` | string(255) | si | Concepto facturado |
-| `baseImponible` | decimal(12,2) | si | Importe base |
-| `porcentajeImpuesto` | decimal(5,2) | si | IVA o impuesto |
-| `total` | decimal(12,2) | si | Total calculado |
-| `estado` | enum | si | `Pendiente`, `Pagada`, `Vencida` |
-| `fechaPago` | date | no | Fecha de pago |
-| `metodoPago` | enum | no | `Efectivo` o `Transferencia` |
-| `archivoAdjunto` | string(255) | no | Ruta del adjunto |
-| `fechaRegistro` | date | si | Fecha de alta |
+| Campo                | Tipo          | Req | Descripcion                      |
+| -------------------- | ------------- | --- | -------------------------------- |
+| `id`                 | integer       | si  | Identificador                    |
+| `proveedorId`        | integer       | si  | Proveedor facturador             |
+| `obraId`             | integer       | si  | Obra consumidora del gasto       |
+| `categoriaId`        | integer       | si  | Categoria del gasto              |
+| `categoriaNombre`    | string(80)    | si  | Snapshot del nombre de categoria |
+| `numeroFactura`      | string(60)    | si  | Numero de documento              |
+| `fechaEmision`       | date          | si  | Fecha de emision                 |
+| `fechaVencimiento`   | date          | si  | Fecha de vencimiento             |
+| `concepto`           | string(255)   | si  | Concepto facturado               |
+| `baseImponible`      | decimal(12,2) | si  | Importe base                     |
+| `porcentajeImpuesto` | decimal(5,2)  | si  | IVA o impuesto                   |
+| `total`              | decimal(12,2) | si  | Total calculado                  |
+| `estado`             | enum          | si  | `Pendiente`, `Pagada`, `Vencida` |
+| `fechaPago`          | date          | no  | Fecha de pago                    |
+| `metodoPago`         | enum          | no  | `Efectivo` o `Transferencia`     |
+| `archivoAdjunto`     | string(255)   | no  | Ruta del adjunto                 |
+| `fechaRegistro`      | date          | si  | Fecha de alta                    |
 
 #### `CompraBien`
 
-| Campo | Tipo | Req | Descripcion |
-| --- | --- | --- | --- |
-| `id` | integer | si | Identificador |
-| `proveedorId` | integer | si | Proveedor facturador |
-| `obraId` | integer | si | Obra vinculada |
-| `categoriaId` | integer | si | Categoria de compra |
-| `categoriaNombre` | string(80) | si | Snapshot del nombre de categoria |
-| `cotizacionId` | integer | no | Cotizacion relacionada |
-| `numeroFactura` | string(60) | si | Numero de documento |
-| `fechaEmision` | date | si | Fecha de emision |
-| `fechaVencimiento` | date | si | Fecha de vencimiento |
-| `concepto` | string(255) | si | Concepto facturado |
-| `baseImponible` | decimal(12,2) | si | Importe base |
-| `porcentajeImpuesto` | decimal(5,2) | si | IVA o impuesto |
-| `total` | decimal(12,2) | si | Total calculado |
-| `estado` | enum | si | `Pendiente`, `Pagada`, `Vencida` |
-| `fechaPago` | date | no | Fecha de pago |
-| `metodoPago` | enum | no | `Efectivo` o `Transferencia` |
-| `archivoAdjunto` | string(255) | no | Ruta del adjunto |
-| `nombreBien` | string(150) | si | Bien adquirido |
-| `cantidad` | integer | si | Unidades adquiridas |
-| `estadoBien` | enum | si | `Nuevo` o `Usado` |
-| `tipoBien` | enum | si | `Consumible` o `Activo` |
-| `fechaRegistro` | date | si | Fecha de alta |
+| Campo                | Tipo          | Req | Descripcion                      |
+| -------------------- | ------------- | --- | -------------------------------- |
+| `id`                 | integer       | si  | Identificador                    |
+| `proveedorId`        | integer       | si  | Proveedor facturador             |
+| `obraId`             | integer       | si  | Obra vinculada                   |
+| `categoriaId`        | integer       | si  | Categoria de compra              |
+| `categoriaNombre`    | string(80)    | si  | Snapshot del nombre de categoria |
+| `cotizacionId`       | integer       | no  | Cotizacion relacionada           |
+| `numeroFactura`      | string(60)    | si  | Numero de documento              |
+| `fechaEmision`       | date          | si  | Fecha de emision                 |
+| `fechaVencimiento`   | date          | si  | Fecha de vencimiento             |
+| `concepto`           | string(255)   | si  | Concepto facturado               |
+| `baseImponible`      | decimal(12,2) | si  | Importe base                     |
+| `porcentajeImpuesto` | decimal(5,2)  | si  | IVA o impuesto                   |
+| `total`              | decimal(12,2) | si  | Total calculado                  |
+| `estado`             | enum          | si  | `Pendiente`, `Pagada`, `Vencida` |
+| `fechaPago`          | date          | no  | Fecha de pago                    |
+| `metodoPago`         | enum          | no  | `Efectivo` o `Transferencia`     |
+| `archivoAdjunto`     | string(255)   | no  | Ruta del adjunto                 |
+| `nombreBien`         | string(150)   | si  | Bien adquirido                   |
+| `cantidad`           | integer       | si  | Unidades adquiridas              |
+| `estadoBien`         | enum          | si  | `Nuevo` o `Usado`                |
+| `tipoBien`           | enum          | si  | `Consumible` o `Activo`          |
+| `fechaRegistro`      | date          | si  | Fecha de alta                    |
 
 #### `AuditLog`
 
-| Campo | Tipo | Req | Descripcion |
-| --- | --- | --- | --- |
-| `id` | integer | si | Identificador |
-| `userId` | integer | no | Usuario que ejecuto el cambio |
-| `modulo` | string(50) | si | Modulo afectado |
-| `accion` | string(60) | si | Tipo de accion |
-| `entidad` | string(80) | no | Nombre de la entidad |
-| `entidadId` | integer | no | Identificador de la entidad |
-| `beforeData` | text | no | Snapshot previo |
-| `afterData` | text | no | Snapshot posterior |
-| `createdAt` | datetime | si | Fecha de registro |
+| Campo        | Tipo       | Req | Descripcion                   |
+| ------------ | ---------- | --- | ----------------------------- |
+| `id`         | integer    | si  | Identificador                 |
+| `userId`     | integer    | no  | Usuario que ejecuto el cambio |
+| `modulo`     | string(50) | si  | Modulo afectado               |
+| `accion`     | string(60) | si  | Tipo de accion                |
+| `entidad`    | string(80) | no  | Nombre de la entidad          |
+| `entidadId`  | integer    | no  | Identificador de la entidad   |
+| `beforeData` | text       | no  | Snapshot previo               |
+| `afterData`  | text       | no  | Snapshot posterior            |
+| `createdAt`  | datetime   | si  | Fecha de registro             |
 
 ### Relaciones principales
 
@@ -672,16 +672,16 @@ Los servicios concentran la logica mas importante del dominio:
 
 ### Formato general de respuestas
 
-| Familia de endpoint | Ejemplo de respuesta |
-| --- | --- |
-| `GET /api/...` de listado | `{"items":[...],"pagination":{"page":1,"pageSize":12,"totalItems":1,"totalPages":1,"hasPrev":false,"hasNext":false}}` |
-| `POST /api/...` de alta | `{"proveedor":{...}}`, `{"cliente":{...}}`, `{"obra":{...}}`, etc. |
-| `PUT /api/.../:id` de edicion | Misma forma que el alta, con el objeto actualizado |
-| `PATCH /api/.../:id/...` de accion | Objeto actualizado o varios objetos relacionados |
-| `GET /api/dashboard` | Objeto con resumen, graficas, alertas y actividad |
-| `GET /api/rentabilidad` | Arreglo de obras con ingresos, egresos, utilidad y margen |
-| `GET /api/reportes/*` | Archivo PDF/CSV/XLSX descargable |
-| `POST /api/asistente/consultar` | Objeto con analisis, recomendaciones y contexto |
+| Familia de endpoint                | Ejemplo de respuesta                                                                                                  |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/...` de listado          | `{"items":[...],"pagination":{"page":1,"pageSize":12,"totalItems":1,"totalPages":1,"hasPrev":false,"hasNext":false}}` |
+| `POST /api/...` de alta            | `{"proveedor":{...}}`, `{"cliente":{...}}`, `{"obra":{...}}`, etc.                                                    |
+| `PUT /api/.../:id` de edicion      | Misma forma que el alta, con el objeto actualizado                                                                    |
+| `PATCH /api/.../:id/...` de accion | Objeto actualizado o varios objetos relacionados                                                                      |
+| `GET /api/dashboard`               | Objeto con resumen, graficas, alertas y actividad                                                                     |
+| `GET /api/rentabilidad`            | Arreglo de obras con ingresos, egresos, utilidad y margen                                                             |
+| `GET /api/reportes/*`              | Archivo PDF/CSV/XLSX descargable                                                                                      |
+| `POST /api/asistente/consultar`    | Objeto con analisis, recomendaciones y contexto                                                                       |
 
 ### Autenticacion
 
@@ -1276,10 +1276,3 @@ La app usa SQLite, por lo que el archivo de base debe persistir entre reinicios.
 - `middleware/errorHandler.js`: errores y validaciones.
 
 ---
-
-Si quieres, en el siguiente paso puedo convertir este README en una version aun mas profesional con:
-
-1. Diagrama de arquitectura.
-2. Tabla detallada de modelos/campos.
-3. Ejemplos de payloads JSON para cada endpoint.
-4. Guia de despliegue en produccion paso a paso.
