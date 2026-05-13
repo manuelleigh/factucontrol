@@ -466,6 +466,176 @@ Las entidades Sequelize se definen en `models/` y las relaciones se registran en
 - `schema_migrations`
 - `Sessions`
 
+### Tabla detallada de modelos y campos
+
+#### `User`
+
+| Campo | Tipo | Req | Descripcion |
+| --- | --- | --- | --- |
+| `id` | integer | si | Identificador autoincremental |
+| `name` | string(120) | si | Nombre visible del usuario |
+| `email` | string(160) | si | Correo unico de acceso |
+| `passwordHash` | string(255) | si | Hash bcrypt de la contraseña |
+| `role` | enum `admin` / `operador` | si | Rol de permisos |
+| `active` | boolean | si | Usuario habilitado |
+| `failedAttempts` | integer | si | Intentos fallidos acumulados |
+| `blockedUntil` | datetime | no | Bloqueo temporal por intentos |
+| `lastLoginAt` | datetime | no | Fecha del ultimo acceso |
+
+#### `Proveedor`
+
+| Campo | Tipo | Req | Descripcion |
+| --- | --- | --- | --- |
+| `id` | integer | si | Identificador |
+| `nombre` | string(120) | si | Razon social o nombre comercial |
+| `identificacionFiscal` | string(50) | si | RUC/NIF/identificador fiscal unico |
+| `giro` | string(120) | no | Actividad comercial |
+| `telefono` | string(30) | no | Telefono de contacto |
+| `correo` | string(120) | no | Correo de contacto |
+| `activo` | boolean | si | Estado del proveedor |
+| `fechaRegistro` | date | si | Fecha de alta |
+
+#### `Cliente`
+
+| Campo | Tipo | Req | Descripcion |
+| --- | --- | --- | --- |
+| `id` | integer | si | Identificador |
+| `razonSocial` | string(160) | si | Nombre legal del cliente |
+| `ruc` | string(11) | si | RUC unico |
+| `direccion` | string(180) | no | Direccion fisica |
+| `telefono` | string(30) | no | Telefono de contacto |
+| `correo` | string(120) | no | Correo de contacto |
+| `activo` | boolean | si | Estado del cliente |
+
+#### `Obra`
+
+| Campo | Tipo | Req | Descripcion |
+| --- | --- | --- | --- |
+| `id` | integer | si | Identificador |
+| `nombre` | string(160) | si | Nombre del proyecto |
+| `clienteId` | integer | si | Cliente asociado |
+| `fechaInicio` | date | no | Inicio de ejecucion |
+| `fechaFinEstimada` | date | no | Fin estimado |
+| `presupuestoTotal` | decimal(14,2) | si | Presupuesto asignado |
+| `estado` | enum | si | `En formulacion`, `En ejecucion`, `Finalizada`, `Cerrada` |
+| `descripcion` | text | no | Descripcion del alcance |
+| `activo` | boolean | si | Estado operativo |
+
+#### `Cobro`
+
+| Campo | Tipo | Req | Descripcion |
+| --- | --- | --- | --- |
+| `id` | integer | si | Identificador |
+| `obraId` | integer | si | Obra relacionada |
+| `clienteId` | integer | si | Cliente relacionado |
+| `montoCobrado` | decimal(14,2) | si | Importe cobrado |
+| `fechaCobro` | date | si | Fecha del cobro |
+| `metodoCobro` | enum | si | `Efectivo` o `Transferencia` |
+| `estado` | enum | si | `Cobrado`, `Pendiente`, `Vencido` |
+| `concepto` | string(255) | si | Descripcion del cobro |
+| `comprobanteAdjunto` | string(255) | no | Ruta del archivo subido |
+
+#### `Categoria`
+
+| Campo | Tipo | Req | Descripcion |
+| --- | --- | --- | --- |
+| `id` | integer | si | Identificador |
+| `nombre` | string(120) | si | Nombre unico |
+| `tipo` | enum | si | `gasto_operativo` o `compra_bien` |
+| `presupuestoMensual` | decimal(14,2) | si | Presupuesto de referencia |
+| `mes` | integer | si | Mes del periodo |
+| `anio` | integer | si | Anio del periodo |
+| `activo` | boolean | si | Estado de la categoria |
+
+#### `Presupuesto`
+
+| Campo | Tipo | Req | Descripcion |
+| --- | --- | --- | --- |
+| `id` | integer | si | Identificador |
+| `clienteId` | integer | si | Cliente solicitante |
+| `nombre` | string(160) | si | Nombre del presupuesto |
+| `descripcion` | text | no | Alcance o detalle |
+| `montoEstimado` | decimal(14,2) | si | Importe propuesto |
+| `fechaSolicitud` | date | si | Fecha de ingreso |
+| `estado` | enum | si | `Pendiente`, `Aprobado`, `Rechazado` |
+| `obraId` | integer | no | Obra generada o vinculada tras aprobar |
+
+#### `Cotizacion`
+
+| Campo | Tipo | Req | Descripcion |
+| --- | --- | --- | --- |
+| `id` | integer | si | Identificador |
+| `proveedorId` | integer | si | Proveedor que cotiza |
+| `obraId` | integer | si | Obra asociada |
+| `descripcion` | string(255) | si | Descripcion de la oferta |
+| `monto` | decimal(14,2) | si | Importe cotizado |
+| `fechaVigencia` | date | si | Fecha limite de validez |
+| `estado` | enum | si | `Pendiente`, `Aprobada`, `Rechazada` |
+| `facturaCompraId` | integer | no | Factura de compra vinculada |
+
+#### `GastoOperativo`
+
+| Campo | Tipo | Req | Descripcion |
+| --- | --- | --- | --- |
+| `id` | integer | si | Identificador |
+| `proveedorId` | integer | si | Proveedor facturador |
+| `obraId` | integer | si | Obra consumidora del gasto |
+| `categoriaId` | integer | si | Categoria del gasto |
+| `categoriaNombre` | string(80) | si | Snapshot del nombre de categoria |
+| `numeroFactura` | string(60) | si | Numero de documento |
+| `fechaEmision` | date | si | Fecha de emision |
+| `fechaVencimiento` | date | si | Fecha de vencimiento |
+| `concepto` | string(255) | si | Concepto facturado |
+| `baseImponible` | decimal(12,2) | si | Importe base |
+| `porcentajeImpuesto` | decimal(5,2) | si | IVA o impuesto |
+| `total` | decimal(12,2) | si | Total calculado |
+| `estado` | enum | si | `Pendiente`, `Pagada`, `Vencida` |
+| `fechaPago` | date | no | Fecha de pago |
+| `metodoPago` | enum | no | `Efectivo` o `Transferencia` |
+| `archivoAdjunto` | string(255) | no | Ruta del adjunto |
+| `fechaRegistro` | date | si | Fecha de alta |
+
+#### `CompraBien`
+
+| Campo | Tipo | Req | Descripcion |
+| --- | --- | --- | --- |
+| `id` | integer | si | Identificador |
+| `proveedorId` | integer | si | Proveedor facturador |
+| `obraId` | integer | si | Obra vinculada |
+| `categoriaId` | integer | si | Categoria de compra |
+| `categoriaNombre` | string(80) | si | Snapshot del nombre de categoria |
+| `cotizacionId` | integer | no | Cotizacion relacionada |
+| `numeroFactura` | string(60) | si | Numero de documento |
+| `fechaEmision` | date | si | Fecha de emision |
+| `fechaVencimiento` | date | si | Fecha de vencimiento |
+| `concepto` | string(255) | si | Concepto facturado |
+| `baseImponible` | decimal(12,2) | si | Importe base |
+| `porcentajeImpuesto` | decimal(5,2) | si | IVA o impuesto |
+| `total` | decimal(12,2) | si | Total calculado |
+| `estado` | enum | si | `Pendiente`, `Pagada`, `Vencida` |
+| `fechaPago` | date | no | Fecha de pago |
+| `metodoPago` | enum | no | `Efectivo` o `Transferencia` |
+| `archivoAdjunto` | string(255) | no | Ruta del adjunto |
+| `nombreBien` | string(150) | si | Bien adquirido |
+| `cantidad` | integer | si | Unidades adquiridas |
+| `estadoBien` | enum | si | `Nuevo` o `Usado` |
+| `tipoBien` | enum | si | `Consumible` o `Activo` |
+| `fechaRegistro` | date | si | Fecha de alta |
+
+#### `AuditLog`
+
+| Campo | Tipo | Req | Descripcion |
+| --- | --- | --- | --- |
+| `id` | integer | si | Identificador |
+| `userId` | integer | no | Usuario que ejecuto el cambio |
+| `modulo` | string(50) | si | Modulo afectado |
+| `accion` | string(60) | si | Tipo de accion |
+| `entidad` | string(80) | no | Nombre de la entidad |
+| `entidadId` | integer | no | Identificador de la entidad |
+| `beforeData` | text | no | Snapshot previo |
+| `afterData` | text | no | Snapshot posterior |
+| `createdAt` | datetime | si | Fecha de registro |
+
 ### Relaciones principales
 
 - Un cliente tiene muchas obras.
@@ -497,6 +667,473 @@ Los servicios concentran la logica mas importante del dominio:
 - `Sessions` almacena sesiones de `connect-sqlite3`.
 - `users` incluye control de intentos fallidos y bloqueo temporal.
 - Existen indices unicos en identificadores fiscales y numeros de factura por proveedor.
+
+## Ejemplos de request y response
+
+### Formato general de respuestas
+
+| Familia de endpoint | Ejemplo de respuesta |
+| --- | --- |
+| `GET /api/...` de listado | `{"items":[...],"pagination":{"page":1,"pageSize":12,"totalItems":1,"totalPages":1,"hasPrev":false,"hasNext":false}}` |
+| `POST /api/...` de alta | `{"proveedor":{...}}`, `{"cliente":{...}}`, `{"obra":{...}}`, etc. |
+| `PUT /api/.../:id` de edicion | Misma forma que el alta, con el objeto actualizado |
+| `PATCH /api/.../:id/...` de accion | Objeto actualizado o varios objetos relacionados |
+| `GET /api/dashboard` | Objeto con resumen, graficas, alertas y actividad |
+| `GET /api/rentabilidad` | Arreglo de obras con ingresos, egresos, utilidad y margen |
+| `GET /api/reportes/*` | Archivo PDF/CSV/XLSX descargable |
+| `POST /api/asistente/consultar` | Objeto con analisis, recomendaciones y contexto |
+
+### Autenticacion
+
+#### Login
+
+Request:
+
+```bash
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@gestpyme.pe","password":"GestPyme123!"}'
+```
+
+Response:
+
+```json
+{
+  "ok": true,
+  "user": {
+    "id": 1,
+    "name": "Administrador",
+    "email": "admin@gestpyme.pe",
+    "role": "admin",
+    "active": true
+  },
+  "redirectTo": "/"
+}
+```
+
+#### Logout
+
+Request:
+
+```bash
+curl -X POST http://localhost:3000/api/auth/logout
+```
+
+Response:
+
+```json
+{
+  "ok": true,
+  "redirectTo": "/login"
+}
+```
+
+### Listados
+
+#### Clientes
+
+Request:
+
+```bash
+curl "http://localhost:3000/api/clientes?search=constructora&page=1&pageSize=10" \
+  -H "Cookie: connect.sid=..."
+```
+
+Response:
+
+```json
+{
+  "items": [
+    {
+      "id": 3,
+      "razonSocial": "Constructora Andina S.A.C.",
+      "ruc": "20123456789",
+      "direccion": "Av. Principal 123",
+      "telefono": "987654321",
+      "correo": "ventas@andina.com",
+      "activo": true
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "pageSize": 10,
+    "totalItems": 1,
+    "totalPages": 1,
+    "hasPrev": false,
+    "hasNext": false
+  }
+}
+```
+
+#### Dashboard
+
+Response de `GET /api/dashboard`:
+
+```json
+{
+  "currentMonth": 5,
+  "currentYear": 2026,
+  "resumen": {
+    "resultadoMes": 12000,
+    "cuentasPorCobrar": 3500,
+    "cuentasPorPagar": 1800,
+    "obrasActivas": 4,
+    "ingresosMes": 28000,
+    "gastosMes": 16000,
+    "presupuestoTotalObras": 95000,
+    "cotizacionesPendientes": 2,
+    "presupuestosPendientes": 1,
+    "alertasActivas": 3
+  },
+  "categoriasSemaforo": [],
+  "graficaBarras": [],
+  "graficaTorta": [],
+  "graficaObras": [],
+  "alertas": [],
+  "actividadReciente": []
+}
+```
+
+### Altas y ediciones
+
+#### Proveedores
+
+Request:
+
+```bash
+curl -X POST http://localhost:3000/api/proveedores \
+  -H "Content-Type: application/json" \
+  -H "Cookie: connect.sid=..." \
+  -d '{
+    "nombre": "Ferreteria Central SRL",
+    "identificacionFiscal": "20567890123",
+    "giro": "Ferreteria",
+    "telefono": "999888777",
+    "correo": "ventas@ferreteriacentral.com",
+    "activo": true
+  }'
+```
+
+Response:
+
+```json
+{
+  "proveedor": {
+    "id": 7,
+    "nombre": "Ferreteria Central SRL",
+    "identificacionFiscal": "20567890123",
+    "giro": "Ferreteria",
+    "telefono": "999888777",
+    "correo": "ventas@ferreteriacentral.com",
+    "activo": true,
+    "fechaRegistro": "2026-05-12"
+  }
+}
+```
+
+#### Obras
+
+Request:
+
+```bash
+curl -X PUT http://localhost:3000/api/obras/12 \
+  -H "Content-Type: application/json" \
+  -H "Cookie: connect.sid=..." \
+  -d '{
+    "nombre": "Edificio San Miguel",
+    "clienteId": 3,
+    "fechaInicio": "2026-05-10",
+    "fechaFinEstimada": "2026-09-30",
+    "presupuestoTotal": 95000,
+    "estado": "En ejecucion",
+    "descripcion": "Construccion de edificio multifamiliar",
+    "activo": true
+  }'
+```
+
+Response:
+
+```json
+{
+  "obra": {
+    "id": 12,
+    "nombre": "Edificio San Miguel",
+    "clienteId": 3,
+    "fechaInicio": "2026-05-10",
+    "fechaFinEstimada": "2026-09-30",
+    "presupuestoTotal": 95000,
+    "estado": "En ejecucion",
+    "descripcion": "Construccion de edificio multifamiliar",
+    "activo": true
+  }
+}
+```
+
+#### Cobros
+
+Request con archivo:
+
+```bash
+curl -X POST http://localhost:3000/api/cobros \
+  -H "Cookie: connect.sid=..." \
+  -F "obraId=12" \
+  -F "clienteId=3" \
+  -F "montoCobrado=5000" \
+  -F "fechaCobro=2026-05-12" \
+  -F "metodoCobro=Transferencia" \
+  -F "estado=Cobrado" \
+  -F "concepto=Cuota inicial" \
+  -F "comprobanteAdjunto=@/ruta/comprobante.pdf"
+```
+
+Response:
+
+```json
+{
+  "cobro": {
+    "id": 18,
+    "obraId": 12,
+    "clienteId": 3,
+    "montoCobrado": 5000,
+    "fechaCobro": "2026-05-12",
+    "metodoCobro": "Transferencia",
+    "estado": "Cobrado",
+    "concepto": "Cuota inicial",
+    "comprobanteAdjunto": "/uploads/..."
+  }
+}
+```
+
+#### Gastos
+
+Request con archivo:
+
+```bash
+curl -X POST http://localhost:3000/api/gastos \
+  -H "Cookie: connect.sid=..." \
+  -F "proveedorId=7" \
+  -F "obraId=12" \
+  -F "categoriaId=4" \
+  -F "numeroFactura=F001-000123" \
+  -F "fechaEmision=2026-05-12" \
+  -F "fechaVencimiento=2026-06-12" \
+  -F "concepto=Materiales de obra" \
+  -F "baseImponible=2000" \
+  -F "porcentajeImpuesto=18" \
+  -F "archivoAdjunto=@/ruta/factura.pdf"
+```
+
+Response:
+
+```json
+{
+  "gasto": {
+    "id": 22,
+    "proveedorId": 7,
+    "obraId": 12,
+    "categoriaId": 4,
+    "numeroFactura": "F001-000123",
+    "fechaEmision": "2026-05-12",
+    "fechaVencimiento": "2026-06-12",
+    "concepto": "Materiales de obra",
+    "baseImponible": 2000,
+    "porcentajeImpuesto": 18,
+    "total": 2360,
+    "estado": "Pendiente",
+    "archivoAdjunto": "/uploads/..."
+  }
+}
+```
+
+### Acciones
+
+#### Aprobar presupuesto
+
+Request:
+
+```bash
+curl -X PATCH http://localhost:3000/api/presupuestos/15/aprobar \
+  -H "Cookie: connect.sid=..."
+```
+
+Response:
+
+```json
+{
+  "presupuesto": {
+    "id": 15,
+    "clienteId": 3,
+    "nombre": "Proyecto residencial",
+    "montoEstimado": 95000,
+    "estado": "Aprobado",
+    "obraId": 12
+  },
+  "obra": {
+    "id": 12,
+    "nombre": "Proyecto residencial",
+    "clienteId": 3,
+    "presupuestoTotal": 95000,
+    "estado": "En formulacion"
+  }
+}
+```
+
+#### Aprobar cotizacion
+
+Request:
+
+```bash
+curl -X PATCH http://localhost:3000/api/cotizaciones/9/aprobar \
+  -H "Cookie: connect.sid=..."
+```
+
+Response:
+
+```json
+{
+  "id": 9,
+  "proveedorId": 7,
+  "obraId": 12,
+  "descripcion": "Suministro de cemento",
+  "monto": 8200,
+  "fechaVigencia": "2026-05-20",
+  "estado": "Aprobada",
+  "facturaCompraId": null
+}
+```
+
+#### Marcar gasto como pagado
+
+Request:
+
+```bash
+curl -X PATCH http://localhost:3000/api/gastos/22/pagar \
+  -H "Content-Type: application/json" \
+  -H "Cookie: connect.sid=..." \
+  -d '{"fechaPago":"2026-05-12","metodoPago":"Transferencia"}'
+```
+
+Response:
+
+```json
+{
+  "gasto": {
+    "id": 22,
+    "estado": "Pagada",
+    "fechaPago": "2026-05-12",
+    "metodoPago": "Transferencia"
+  }
+}
+```
+
+#### Cerrar obra
+
+Response de `PATCH /api/obras/:id/cerrar`:
+
+```json
+{
+  "obra": {
+    "id": 12,
+    "estado": "Cerrada",
+    "activo": false
+  }
+}
+```
+
+#### Desactivar cliente o proveedor
+
+Response de `PATCH /api/clientes/:id/desactivar`:
+
+```json
+{
+  "cliente": {
+    "id": 3,
+    "activo": false
+  }
+}
+```
+
+Response de `PATCH /api/proveedores/:id/desactivar`:
+
+```json
+{
+  "proveedor": {
+    "id": 7,
+    "activo": false
+  }
+}
+```
+
+### Reportes
+
+#### Reporte mensual
+
+Request:
+
+```bash
+curl "http://localhost:3000/api/reportes/mensual?month=5&year=2026&format=pdf" \
+  -H "Cookie: connect.sid=..."
+```
+
+Respuesta:
+
+- Descarga de archivo `gestpyme-reporte-mensual.pdf`
+- Si `format=csv`, descarga `gestpyme-reporte-mensual.csv`
+- Si `format=xlsx`, descarga `gestpyme-reporte-mensual.xlsx`
+
+#### Reporte de rentabilidad
+
+Request:
+
+```bash
+curl "http://localhost:3000/api/reportes/rentabilidad?format=xlsx" \
+  -H "Cookie: connect.sid=..."
+```
+
+Respuesta:
+
+- Descarga de archivo `gestpyme-rentabilidad.xlsx`
+- Si `format=pdf`, descarga `gestpyme-rentabilidad.pdf`
+- Si `format=csv`, descarga `gestpyme-rentabilidad.csv`
+
+### Asistente IA
+
+Request:
+
+```bash
+curl -X POST http://localhost:3000/api/asistente/consultar \
+  -H "Content-Type: application/json" \
+  -H "Cookie: connect.sid=..." \
+  -d '{
+    "scope": "general",
+    "question": "Resume los principales riesgos del negocio para este mes",
+    "month": 5,
+    "year": 2026
+  }'
+```
+
+Response:
+
+```json
+{
+  "mode": "groq",
+  "provider": "Groq",
+  "model": "llama-3.1-8b-instant",
+  "question": "Resume los principales riesgos del negocio para este mes",
+  "answer": "Diagnostico ...",
+  "sections": {
+    "diagnostico": "..."
+  },
+  "recommendations": ["..."],
+  "keyFindings": ["..."],
+  "config": {
+    "enabled": true,
+    "model": "llama-3.1-8b-instant",
+    "maxTokens": 220
+  },
+  "context": {}
+}
+```
 
 ## Adjuntos y uploads
 
